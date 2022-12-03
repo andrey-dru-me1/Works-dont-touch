@@ -1,16 +1,4 @@
-POST localhost:8080/customers
-Accept: application/json
-Content-Type: application/json
-
-{
-  "id": 78912,
-  "firstName": "Mikhail",
-  "lastName": "Tsukanov"
-}
-
-<> 2022-12-01T204634.200.json
+POST localhost:8080/demo/add
 
 ###
-GET http://localhost:8080/customers
-
-<> 2022-12-01T204643.200.json
+GET localhost:8080/demo/all
