@@ -1,8 +1,11 @@
 package ru.works.dont.touch.server.servicies;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.repositories.UserRepository;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -17,7 +20,13 @@ public class UserService {
     }
 
     public boolean userExist(User user) {
-        return userRepository.existsByLogin(user.getLogin());
+        return userExist(user.getLogin());
+    }
+    public boolean userExist(String login, byte[] password) {
+        return userRepository.existsByLoginAndPassword(login, password);
+    }
+    public boolean userExist(String login) {
+        return userRepository.existsByLogin(login);
     }
 
     public boolean saveNewUser(User user) {
@@ -42,5 +51,25 @@ public class UserService {
         userRepository.deleteAll();
     }
 
+    @Transactional
+    public boolean changeByLogin(String login, byte[] password){
+        if (!userExist(login)){
+            return false;
+        }
+        userRepository.changeByLogin(login, password);
+        return true;
+    }
+
+    public User getUserByLogin(String login){
+        if (!userExist(login)){
+            return null;
+        }
+        return userRepository.findByLogin(login);
+    }
+
+    public byte[] getPasswordByLogin(String login){
+        var out = getUserByLogin(login);
+        return out == null? null : out.getPassword();
+    }
 
 }
