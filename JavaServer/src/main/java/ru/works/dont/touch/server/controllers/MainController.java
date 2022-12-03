@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.works.dont.touch.server.entities.User;
-import ru.works.dont.touch.server.repositories.UserRepository;
 import ru.works.dont.touch.server.servicies.UserService;
 
 @Controller // This means that this class is a Controller
@@ -21,14 +20,15 @@ public class MainController {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
         /**/
-        boolean saved = userService.saveNewUser("20", new byte[1]);
+        byte[] fig = new byte[1];
+        fig[0] = 5;
+        boolean saved = userService.saveNewUser("25", fig);
 
         return saved? "Saved": "Not saved";
     }
 
     @GetMapping(path="/al")
     public @ResponseBody Iterable<User> getAllUsers() {
-        System.out.println("HEllo\n");
         // This returns a JSON or XML with the users
         return userService.findAll();
     }
@@ -37,11 +37,11 @@ public class MainController {
     public @ResponseBody boolean updateUser() {
         byte[] psw = new byte[1];
         psw[0] = 2;
-        return userService.changeByLogin("20", psw);
+        return userService.changeByLogin("25", psw);
     }
 
     @GetMapping(path="/gbl")
     public @ResponseBody byte[] getByLogin() {
-        return userService.getPasswordByLogin("20");
+        return userService.getPasswordByLogin("25");
     }
 }

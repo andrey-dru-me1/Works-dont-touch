@@ -18,6 +18,10 @@ public class User {
 
     private byte[] password;
 
+    public Long getId() {
+        return id;
+    }
+
     public String getLogin() {
         return login;
     }

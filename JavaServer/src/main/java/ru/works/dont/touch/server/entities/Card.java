@@ -18,6 +18,10 @@ public class Card {
 
     private Long ownerId;
 
+    public Long getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }

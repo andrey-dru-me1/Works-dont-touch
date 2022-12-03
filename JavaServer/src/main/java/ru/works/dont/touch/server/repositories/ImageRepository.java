@@ -5,4 +5,6 @@ import ru.works.dont.touch.server.entities.Image;
 
 public interface ImageRepository extends CrudRepository<Image, Integer> {
     Image findById(Long id);
+
+
 }
