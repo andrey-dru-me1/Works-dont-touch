@@ -14,6 +14,14 @@ public class UserService {
     }
 
     private final UserRepository userRepository;
+    public User findUserByID(Long id) throws NotExistsException {
+        var user = userRepository.findById(id);
+        if (user.isEmpty()){
+            throw new NotExistsException("User not exists with id: " + id);
+        }
+
+        return user.get();
+    }
 
     public Iterable<User> findAll() {
         return userRepository.findAll();

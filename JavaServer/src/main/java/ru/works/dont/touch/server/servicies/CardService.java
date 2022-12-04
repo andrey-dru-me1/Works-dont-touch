@@ -14,6 +14,13 @@ public class CardService {
     public CardService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }
+    public Card getCardById(Long id) throws NotExistsException {
+        var card = cardRepository.findById(id);
+        if (card.isEmpty()){
+            throw new NotExistsException("Card not exists with id: "+id);
+        }
+        return card.get();
+    }
 
     public Iterable<Card> getCardsByLogin(String login) {
         return cardRepository.findByUserLogin(login);
