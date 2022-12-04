@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 public interface ImageRepository extends CrudRepository<Image, Integer> {
     Image findById(Long id);
+    Stream<Image> findByCardId(Long id);
 
     void deleteById(Long id);
 

@@ -2,11 +2,13 @@ package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import ru.works.dont.touch.server.entities.Image;
 import ru.works.dont.touch.server.entities.Location;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.LocationRepository;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -30,6 +32,13 @@ public class LocationService {
         return locationRepository.findAllByCustom(isCustom);
     }
 
+    public Location findById(Long locationId) throws NotExistsException {
+        Optional<Location> location = locationRepository.findById(locationId);
+        if (location.isEmpty()){
+            throw new NotExistsException("Location doesn't exist"+locationId);
+        }
+        return location.get();
+    }
 
     public void deleteById(Long id) {
         locationRepository.deleteAllById(id);

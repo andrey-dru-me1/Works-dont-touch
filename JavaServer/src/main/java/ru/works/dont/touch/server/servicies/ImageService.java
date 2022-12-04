@@ -26,6 +26,9 @@ public class ImageService {
         }
         return imageRepository.findById(imageId);
     }
+    public Stream<Image> findAllImageByCardId(Long cardId){
+        return imageRepository.findByCardId(cardId);
+    }
 
     public void deleteById(Long id) {
         imageRepository.deleteById(id);

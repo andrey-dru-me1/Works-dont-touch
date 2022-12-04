@@ -28,6 +28,10 @@ public class CoordinateService {
         return coordinateRepository.findById(id);
     }
 
+    public Stream<Coordinate> findByLocationId(Long locationId) {
+        return coordinateRepository.findAllByLocationId(locationId);
+    }
+
 
     public void deleteById(Long id) {
         coordinateRepository.deleteById(id);
