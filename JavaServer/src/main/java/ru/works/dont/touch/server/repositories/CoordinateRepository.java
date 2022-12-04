@@ -1,0 +1,45 @@
+package ru.works.dont.touch.server.repositories;
+
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import ru.works.dont.touch.server.entities.Coordinate;
+
+import java.util.stream.Stream;
+
+public interface CoordinateRepository extends CrudRepository<Coordinate, Integer> {
+    Iterable<Coordinate> findAll();
+
+    Stream<Coordinate> findAllByLocationId(Long locationId);
+
+    Coordinate findById(Long id);
+
+    @Query("SELECT crd " +
+            "FROM Coordinate crd " +
+            "left join Location loc " +
+            "on crd.locationId = loc.id " +
+            "left join Card card " +
+            "on loc.cardId = card.id " +
+            "where card.id = :cardId")
+    Stream<Coordinate> findByCardId(@Param("cardId") Long cardId);
+
+    @Modifying
+    @Query("update Coordinate coord " +
+            "set coord.latitude = :latitude," +
+            "coord.locationId = :locationId," +
+            "coord.latitude = :longitude " +
+            "where coord.id = :coordId")
+    void updateById(@Param("coordId") long coordId,
+                    @Param("locationId") long locationId,
+                    @Param("latitude") double latitude,
+                    @Param("longitude") double longitude);
+
+
+    void deleteById(Long id);
+
+    void deleteAllByLocationId(Long locationId);
+
+
+    boolean existsById(Long id);
+}

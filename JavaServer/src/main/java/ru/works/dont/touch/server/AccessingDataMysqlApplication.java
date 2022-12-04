@@ -4,11 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Main {
-
-
+public class AccessingDataMysqlApplication {
     public static void main(String[] args) {
-        SpringApplication.run(Main.class);
+        System.out.println("hello\n");
+        SpringApplication.run(AccessingDataMysqlApplication.class, args);
     }
 
 }
