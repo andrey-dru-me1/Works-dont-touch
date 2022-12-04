@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
-class AddCardActivity : ComponentActivity() {
+class CardInfoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -22,7 +22,7 @@ class AddCardActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting2("Android")
+                    Greeting("Android")
                 }
             }
         }
@@ -30,14 +30,14 @@ class AddCardActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting2(name: String) {
+fun Greeting(name: String) {
     Text(text = "Hello $name!")
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DefaultPreview3() {
+fun DefaultPreview2() {
     KotlinClientTheme {
-        Greeting2("Android")
+        Greeting("Android")
     }
 }

@@ -13,7 +13,7 @@
         android:theme="@style/Theme.KotlinClient"
         tools:targetApi="31">
         <activity
-            android:name=".AddCardActivity"
+            android:name=".ui.AddCardActivity"
             android:exported="false"
             android:label="@string/title_activity_add_card"
             android:theme="@style/Theme.KotlinClient">
@@ -22,7 +22,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".CardInfoActivity"
+            android:name=".ui.CardInfoActivity"
             android:exported="false"
             android:label="@string/title_activity_card_info"
             android:theme="@style/Theme.KotlinClient">
@@ -31,9 +31,8 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.KotlinClient">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
