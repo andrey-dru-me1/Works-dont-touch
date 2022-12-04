@@ -1,7 +1,7 @@
-package ru.works.dont.touch.server.repositories;
+package ru.works.dont.touch.server.data.repositories;
 
 import org.springframework.data.repository.CrudRepository;
-import ru.works.dont.touch.server.entities.Card;
+import ru.works.dont.touch.server.data.entities.Card;
 
 public interface CardRepository extends CrudRepository<Card, Integer> {
     Iterable<Card> findAll();

@@ -1,4 +1,4 @@
-package ru.works.dont.touch.server.entities;
+package ru.works.dont.touch.server.data.entities;
 
 import jakarta.persistence.*;
 

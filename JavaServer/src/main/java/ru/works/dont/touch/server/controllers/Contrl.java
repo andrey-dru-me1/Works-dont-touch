@@ -6,11 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import ru.works.dont.touch.server.entities.Image;
-import ru.works.dont.touch.server.entities.User;
-import ru.works.dont.touch.server.repositories.ImageRepository;
-import ru.works.dont.touch.server.repositories.UserRepository;
-import ru.works.dont.touch.server.servicies.ImageService;
+import ru.works.dont.touch.server.data.entities.Image;
+import ru.works.dont.touch.server.data.servicies.ImageService;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/emo") // This means URL's start with /demo (after Application path)

@@ -1,11 +1,9 @@
-package ru.works.dont.touch.server.repositories;
+package ru.works.dont.touch.server.data.repositories;
 
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-import ru.works.dont.touch.server.entities.User;
+import ru.works.dont.touch.server.data.entities.User;
 
 
 // This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository

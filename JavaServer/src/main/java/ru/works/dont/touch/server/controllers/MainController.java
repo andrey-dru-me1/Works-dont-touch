@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import ru.works.dont.touch.server.entities.User;
-import ru.works.dont.touch.server.repositories.UserRepository;
-import ru.works.dont.touch.server.servicies.UserService;
+import ru.works.dont.touch.server.data.entities.User;
+import ru.works.dont.touch.server.data.servicies.UserService;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/demo") // This means URL's start with /demo (after Application path)

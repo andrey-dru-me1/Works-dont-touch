@@ -1,11 +1,9 @@
-package ru.works.dont.touch.server.servicies;
+package ru.works.dont.touch.server.data.servicies;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import ru.works.dont.touch.server.entities.User;
-import ru.works.dont.touch.server.repositories.UserRepository;
-
-import java.util.Optional;
+import ru.works.dont.touch.server.data.entities.User;
+import ru.works.dont.touch.server.data.repositories.UserRepository;
 
 @Service
 public class UserService {

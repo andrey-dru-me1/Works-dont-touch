@@ -1,0 +1,12 @@
+POST localhost:8080/demo/ad
+
+###
+GET localhost:8080/demo/al
+
+
+###
+GET localhost:8080/demo/up
+
+
+###
+GET localhost:8080/demo/gbl
