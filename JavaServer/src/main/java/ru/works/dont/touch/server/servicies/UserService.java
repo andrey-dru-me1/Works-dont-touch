@@ -35,8 +35,7 @@ public class UserService {
         if (!userExist(user)) {
             throw new ExistsException("User already exists: " + user);
         }
-        userRepository.save(user);
-        return user;
+        return userRepository.save(user);
     }
 
     public User saveNewUser(String login, byte[] password) throws ExistsException {
@@ -47,8 +46,7 @@ public class UserService {
         User newUser = new User();
         newUser.setLogin(login);
         newUser.setPassword(password);
-        saveNewUser(newUser);
-        return newUser;
+        return saveNewUser(newUser);
     }
 
     public boolean deleteUserByLogin(String login) {

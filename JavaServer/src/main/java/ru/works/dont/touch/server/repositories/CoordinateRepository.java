@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public interface CoordinateRepository extends CrudRepository<Coordinate, Integer> {
     Iterable<Coordinate> findAll();
 
-    Stream<Coordinate> findAllByLocationId(Long locationId);
+    Iterable<Coordinate> findAllByLocationId(Long locationId);
 
     Optional<Coordinate> findById(Long id);
 
@@ -24,7 +24,7 @@ public interface CoordinateRepository extends CrudRepository<Coordinate, Integer
             "left join Card card " +
             "on loc.cardId = card.id " +
             "where card.id = :cardId")
-    Stream<Coordinate> findByCardId(@Param("cardId") Long cardId);
+    Iterable<Coordinate> findByCardId(@Param("cardId") Long cardId);
 
     @Modifying
     @Query("update Coordinate coord " +

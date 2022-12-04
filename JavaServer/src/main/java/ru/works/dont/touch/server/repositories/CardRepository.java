@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import ru.works.dont.touch.server.entities.Card;
 
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public interface CardRepository extends CrudRepository<Card, Integer> {
     Iterable<Card> findAll();
@@ -19,7 +19,7 @@ public interface CardRepository extends CrudRepository<Card, Integer> {
             "left join User user " +
             "on card.ownerId = user.id " +
             "where user.login = ?1")
-    Stream<Card> findByUserLogin(String userLogin);
+    Iterable<Card> findByUserLogin(String userLogin);
 
     @Override
     <S extends Card> S save(S entity);
@@ -28,7 +28,7 @@ public interface CardRepository extends CrudRepository<Card, Integer> {
 
     boolean existsByOwnerId(Long id);
 
-    Card getCardById(Long id);
+    Optional<Card> findById(Long id);
 
     @Modifying
     @Query("update Card card set card.name=?2," +

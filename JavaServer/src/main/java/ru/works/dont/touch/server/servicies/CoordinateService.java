@@ -21,7 +21,7 @@ public class CoordinateService {
         return coordinateRepository.findAll();
     }
 
-    public Stream<Coordinate> findAllByCardId(Long cardId) {
+    public Iterable<Coordinate> findAllByCardId(Long cardId) {
         return coordinateRepository.findByCardId(cardId);
     }
 
@@ -33,7 +33,7 @@ public class CoordinateService {
         return coord.get();
     }
 
-    public Stream<Coordinate> findByLocationId(Long locationId) {
+    public Iterable<Coordinate> findByLocationId(Long locationId) {
         return coordinateRepository.findAllByLocationId(locationId);
     }
 

@@ -26,7 +26,7 @@ public class ImageService {
         }
         return imageRepository.findById(imageId);
     }
-    public Stream<Image> findAllImageByCardId(Long cardId){
+    public Iterable<Image> findAllImageByCardId(Long cardId){
         return imageRepository.findByCardId(cardId);
     }
 
@@ -44,7 +44,7 @@ public class ImageService {
     }
 
 
-    public Stream<Image> findAllByCardId(Long cardId) {
+    public Iterable<Image> findAllByCardId(Long cardId) {
         return imageRepository.findAllByCardId(cardId);
     }
 
@@ -58,8 +58,7 @@ public class ImageService {
     public Image saveImage(Long cardId) {
         Image newImage = new Image();
         newImage.setCardId(cardId);
-        imageRepository.save(newImage);
-        return newImage;
+        return imageRepository.save(newImage);
     }
 
 

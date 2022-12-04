@@ -15,5 +15,5 @@ public interface Repository {
             "card.id = loc.cardId " +
             "left join User user on " +
             "user.id = :userId")
-    Stream<Coordinate> findAllUserCoordinates(Long userId);
+    Iterable<Coordinate> findAllUserCoordinates(Long userId);
 }

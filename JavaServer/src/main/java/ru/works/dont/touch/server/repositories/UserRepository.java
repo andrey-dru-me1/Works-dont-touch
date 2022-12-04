@@ -26,7 +26,7 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     Iterable<User> findAll();
 
     @Query("SELECT u from User u")
-    Stream<User> findAllStream();
+    Iterable<User> findAllStream();
 
 
     @Modifying
