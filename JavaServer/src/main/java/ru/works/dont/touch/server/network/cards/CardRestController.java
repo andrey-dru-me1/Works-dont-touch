@@ -6,7 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.function.ServerRequest;
 
-@RestController("/cards")
+@RestController
+@RequestMapping(path="/cards")
 public class CardRestController {
 
     private static Logger logger = LoggerFactory.getLogger(CardRestController.class);
@@ -16,7 +17,7 @@ public class CardRestController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = {RequestMethod.GET, RequestMethod.POST})
     public void getSortedCards(
-            @RequestHeader(value = "Authorization", required = true) ServerRequest.Headers headers) {
+            @RequestHeader(value = "Authorization", required = true) String authorization) {
 
     }
 
@@ -25,7 +26,7 @@ public class CardRestController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = {RequestMethod.GET})
     public void getCards(
-            @RequestHeader(value = "Authorization", required = true) ServerRequest.Headers headers,
+            @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(value = "id", required = true) long id) {
 
     }
@@ -36,7 +37,7 @@ public class CardRestController {
             params = MediaType.APPLICATION_JSON_VALUE,
             method = {RequestMethod.POST})
     public void addCards(
-            @RequestHeader(value = "Authorization", required = true) ServerRequest.Headers headers,
+            @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(required = true) CardChanger card) {
 
     }
@@ -47,7 +48,7 @@ public class CardRestController {
             params = MediaType.APPLICATION_JSON_VALUE,
             method = {RequestMethod.POST})
     public void addCards(
-            @RequestHeader(value = "Authorization", required = true) ServerRequest.Headers headers,
+            @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(required = true) Card card) {
 
     }
@@ -57,7 +58,7 @@ public class CardRestController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = {RequestMethod.POST})
     public void addCards(
-            @RequestHeader(value = "Authorization", required = true) ServerRequest.Headers headers,
+            @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(value = "card", required = true) long id) {
 
     }

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path="/auth")
-public class AuthorizationController {
+public class AuthorizationRestController {
 
     @Autowired
     private Authorizer authorizer;
