@@ -1,4 +1,4 @@
-package ru.works.dont.touch.server.servicies.exceptions;
+package ru.works.dont.touch.server.exceptions;
 
 public class NotExistsException extends DataBaseException {
     public NotExistsException(String message, Throwable err) {

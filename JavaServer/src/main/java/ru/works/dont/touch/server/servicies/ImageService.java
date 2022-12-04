@@ -1,11 +1,12 @@
 package ru.works.dont.touch.server.servicies;
 
 import org.springframework.stereotype.Service;
-import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.entities.Image;
 import ru.works.dont.touch.server.repositories.ImageRepository;
-import ru.works.dont.touch.server.servicies.exceptions.ExistsException;
-import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
+import ru.works.dont.touch.server.exceptions.ExistsException;
+import ru.works.dont.touch.server.exceptions.NotExistsException;
+
+import java.util.stream.Stream;
 
 @Service
 public class ImageService {
@@ -15,6 +16,12 @@ public class ImageService {
     }
     public Iterable<Image> findAll(){
         return imageRepository.findAll();
+    }
+    public Image findImageById(Long imageId) throws NotExistsException {
+        if (!imageRepository.existsById(imageId)){
+            throw new NotExistsException(""+imageId);
+        }
+        return imageRepository.findById(imageId);
     }
 
     public void deleteById(Long id){
@@ -30,7 +37,7 @@ public class ImageService {
     }
 
 
-    public Iterable<Image> findAllByCardId(Long cardId){
+    public Stream<Image> findAllByCardId(Long cardId){
         return imageRepository.findAllByCardId(cardId);
     }
 

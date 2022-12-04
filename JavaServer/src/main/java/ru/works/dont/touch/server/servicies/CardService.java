@@ -3,7 +3,9 @@ package ru.works.dont.touch.server.servicies;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.repositories.CardRepository;
-import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
+import ru.works.dont.touch.server.exceptions.NotExistsException;
+
+import java.util.stream.Stream;
 
 @Service
 public class CardService {
@@ -12,7 +14,7 @@ public class CardService {
         this.cardRepository = cardRepository;
     }
 
-    public Iterable<Card> getCardsByLogin(String login){
+    public Stream<Card> getCardsByLogin(String login){
         return cardRepository.findByUserLogin(login);
     }
     public Iterable<Card> getCardsByUserId(Long ownerId){

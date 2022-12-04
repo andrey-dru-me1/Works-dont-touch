@@ -4,10 +4,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.repositories.UserRepository;
-import ru.works.dont.touch.server.servicies.exceptions.ExistsException;
-import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
-
-import java.util.Optional;
+import ru.works.dont.touch.server.exceptions.ExistsException;
+import ru.works.dont.touch.server.exceptions.NotExistsException;
 
 @Service
 public class UserService {

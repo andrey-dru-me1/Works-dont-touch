@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import ru.works.dont.touch.server.entities.User;
 
+import java.util.stream.Stream;
+
 
 // This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
 // CRUD refers Create, Read, Update, Delete
@@ -20,6 +22,9 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     User findByLogin(String login);
 
     Iterable<User> findAll();
+
+    @Query("SELECT u from User u")
+    Stream<User> findAllStream();
 
 
 

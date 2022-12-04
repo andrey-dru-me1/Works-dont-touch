@@ -4,6 +4,8 @@ import org.springframework.data.repository.CrudRepository;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.entities.Image;
 
+import java.util.stream.Stream;
+
 public interface ImageRepository extends CrudRepository<Image, Integer> {
     Image findById(Long id);
 
@@ -13,7 +15,7 @@ public interface ImageRepository extends CrudRepository<Image, Integer> {
     boolean existsById(Long id);
     boolean existsByCardId(Long cardId);
 
-    Iterable<Image> findAllByCardId(Long cardId);
+    Stream<Image> findAllByCardId(Long cardId);
 
 
 }

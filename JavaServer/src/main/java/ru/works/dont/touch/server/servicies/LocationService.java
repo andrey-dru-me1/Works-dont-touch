@@ -1,10 +1,13 @@
 package ru.works.dont.touch.server.servicies;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Location;
 import ru.works.dont.touch.server.repositories.LocationRepository;
-import ru.works.dont.touch.server.servicies.exceptions.ExistsException;
-import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
+import ru.works.dont.touch.server.exceptions.ExistsException;
+import ru.works.dont.touch.server.exceptions.NotExistsException;
+
+import java.util.stream.Stream;
 
 @Service
 public class LocationService {
@@ -17,10 +20,10 @@ public class LocationService {
     public Iterable<Location> findAll(){
         return locationRepository.findAll();
     }
-    public Iterable<Location> findAllByCardId(Long cardId){
+    public Stream<Location> findAllByCardId(Long cardId){
         return locationRepository.findAllByCardId(cardId);
     }
-    public Iterable<Location> findAllCustom(Boolean isCustom){
+    public Stream<Location> findAllCustom(Boolean isCustom){
         return locationRepository.findAllByCustom(isCustom);
     }
 
@@ -57,6 +60,7 @@ public class LocationService {
      * @param cardId
      * @return newLocation
      */
+    @Transactional
     public Location update(Long locationId,
                            Boolean isCustom,
                            String name,

@@ -1,4 +1,4 @@
-package ru.works.dont.touch.server.servicies.exceptions;
+package ru.works.dont.touch.server.exceptions;
 
 public class DataBaseException extends Exception{
     public DataBaseException(String message, Throwable err){
