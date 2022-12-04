@@ -1,6 +1,7 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Coordinate;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
@@ -9,6 +10,7 @@ import ru.works.dont.touch.server.repositories.CoordinateRepository;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Service
 public class CoordinateService {
     private CoordinateRepository coordinateRepository;
 
