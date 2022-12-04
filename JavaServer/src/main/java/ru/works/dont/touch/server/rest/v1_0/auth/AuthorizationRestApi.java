@@ -10,7 +10,7 @@ import ru.works.dont.touch.server.rest.v1_0.SimpleRestAnswer;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path="/v1.0/auth")
+@RequestMapping(path = "/v1.0/auth")
 public class AuthorizationRestApi {
 
     @Autowired
@@ -21,7 +21,7 @@ public class AuthorizationRestApi {
     public SimpleRestAnswer registration(
             @RequestHeader(value = "login", required = true) String login,
             @RequestHeader(value = "password", required = true) String password) {
-        if(authorizationService.registration(login, password)) {
+        if (authorizationService.registration(login, password)) {
             return SimpleRestAnswer.getOKAnswer();
         }
         return new SimpleRestAnswer(HttpStatus.INTERNAL_SERVER_ERROR, "can't create new user");
@@ -31,11 +31,14 @@ public class AuthorizationRestApi {
             method = {RequestMethod.GET, RequestMethod.POST},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public SimpleRestAnswer test(
-        @RequestHeader(value = "Authorization") String authorization){
-        if(authorizationService.authorization(authorization).isPresent()) {
-            return SimpleRestAnswer.getOKAnswer();
-        }
-        return new SimpleRestAnswer(HttpStatus.UNAUTHORIZED, "Wrong password");
+            @RequestHeader(value = "Authorization") String authorization) {
+        Optional<User> user = authorizationService.authorization(authorization);
+        return user
+                .map(
+                        value -> new SimpleRestAnswer(HttpStatus.ACCEPTED, value.getLogin() + ":" + new String(value.getPassword())))
+                .orElseGet(
+                        () -> new SimpleRestAnswer(HttpStatus.UNAUTHORIZED, "Wrong password")
+                );
     }
 
     @RequestMapping(path = "/change/password",
@@ -43,9 +46,9 @@ public class AuthorizationRestApi {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public SimpleRestAnswer changePassword(
             @RequestHeader(value = "Authorization") String authorization,
-            @RequestHeader(value = "Password") String newPassword){
+            @RequestHeader(value = "Password") String newPassword) {
         Optional<User> user = authorizationService.authorization(authorization);
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             authorizationService.changePassword(user.get().getLogin(), newPassword);
             return SimpleRestAnswer.getOKAnswer();
         } else {

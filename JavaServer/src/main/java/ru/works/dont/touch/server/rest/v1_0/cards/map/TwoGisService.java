@@ -41,8 +41,7 @@ public class TwoGisService implements MapService {
 
     private long getDistance(Card card, double latitude, double longitude)  {
 
-        Stream<Location> locationStream = locationService.findAllByCardId(card.getId());
-        List<Location> locations = locationStream.toList();
+        Iterable<Location> locations = locationService.findAllByCardId(card.getId());
         long distance = 100000;
         for (Location loc : locations) {
             if (!loc.getCustom()) {
@@ -53,8 +52,7 @@ public class TwoGisService implements MapService {
             }
         }
 
-        Stream<Coordinate> coordinateStream = coordinateService.findAllByCardId(card.getId());
-        List<Coordinate> coordinates = coordinateStream.toList();
+        Iterable<Coordinate> coordinates = coordinateService.findAllByCardId(card.getId());
         for(Coordinate coordinate : coordinates) {
             long _distance = distance(latitude, longitude, coordinate.getLatitude(), coordinate.getLongitude());
             if(_distance < distance) {

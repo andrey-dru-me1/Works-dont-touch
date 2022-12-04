@@ -5,9 +5,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.entities.User;
+import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.rest.v1_0.auth.AuthorizationService;
 import ru.works.dont.touch.server.rest.v1_0.cards.exception.CardCreateException;
 import ru.works.dont.touch.server.rest.v1_0.cards.map.MapService;
+import ru.works.dont.touch.server.rest.v1_0.excepton.AlreadyExistsException;
 import ru.works.dont.touch.server.rest.v1_0.objects.card.CardList;
 import ru.works.dont.touch.server.rest.v1_0.objects.card.ReceivedCard;
 import ru.works.dont.touch.server.rest.v1_0.objects.card.ReturnedCard;
@@ -20,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path="/v1.0/auth")
+@RequestMapping(path="/v1.0/cards")
 public class CardRestApi {
 
     @Autowired
@@ -35,7 +37,7 @@ public class CardRestApi {
     public CardList getCards(
             @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(value = "latitude", required = true) double latitude,
-            @RequestParam(value = "longitude", required = true) double longitude){
+            @RequestParam(value = "longitude", required = true) double longitude) {
         Optional<User> optionalUser = authorizationService.authorization(authorization);
         if(optionalUser.isEmpty()) {
             throw new NoAuthorizationException();
@@ -68,13 +70,15 @@ public class CardRestApi {
             throw new NoAuthorizationException();
         }
         User user = optionalUser.get();
-        Card newCard = new Card();
-        newCard.setName(receivedCard.name());
-        newCard.setOwnerId(user.getId());
-        newCard.setBarcode(receivedCard.barcode());
-        if(!cardService.saveCard(newCard))
+        Card card = null;
+        try {
+            card = cardService.saveCard(receivedCard.name(), receivedCard.barcode(), user.getId());
+        } catch (ExistsException e) {
+            throw new AlreadyExistsException();
+        }
+        if(card == null)
             throw new CardCreateException();
-        return new ReturnedCard(newCard.getId(), newCard.getName(), newCard.getBarcode(), List.of(), List.of());
+        return new ReturnedCard(card.getId(), card.getName(), card.getBarcode(), List.of(), List.of());
     }
 
 }
