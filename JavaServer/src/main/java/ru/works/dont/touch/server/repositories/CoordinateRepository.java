@@ -5,7 +5,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import ru.works.dont.touch.server.entities.Coordinate;
+import ru.works.dont.touch.server.entities.Image;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface CoordinateRepository extends CrudRepository<Coordinate, Integer> {
@@ -13,7 +15,7 @@ public interface CoordinateRepository extends CrudRepository<Coordinate, Integer
 
     Stream<Coordinate> findAllByLocationId(Long locationId);
 
-    Coordinate findById(Long id);
+    Optional<Coordinate> findById(Long id);
 
     @Query("SELECT crd " +
             "FROM Coordinate crd " +
