@@ -2,41 +2,42 @@ package ru.works.dont.touch.server.servicies;
 
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Card;
-import ru.works.dont.touch.server.repositories.CardRepository;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.repositories.CardRepository;
 
 import java.util.stream.Stream;
 
 @Service
 public class CardService {
     private CardRepository cardRepository;
-    public CardService(CardRepository cardRepository){
+
+    public CardService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }
 
-    public Stream<Card> getCardsByLogin(String login){
+    public Stream<Card> getCardsByLogin(String login) {
         return cardRepository.findByUserLogin(login);
     }
-    public Iterable<Card> getCardsByUserId(Long ownerId){
+
+    public Iterable<Card> getCardsByUserId(Long ownerId) {
         return cardRepository.findAllByOwnerId(ownerId);
     }
 
-    public Iterable<Card> findAll(){
+    public Iterable<Card> findAll() {
         return cardRepository.findAll();
     }
 
-    public boolean saveCard(Card newCard){
-        if (cardRepository.existsById(newCard.getId())){
+    public boolean saveCard(Card newCard) {
+        if (cardRepository.existsById(newCard.getId())) {
             return false;
-        }
-        else{
+        } else {
             cardRepository.save(newCard);
             return true;
         }
     }
 
     public boolean saveCard(String name, String barcode,
-                            Long ownerId){
+                            Long ownerId) {
         Card newCard = new Card();
         newCard.setName(name);
         newCard.setBarcode(barcode);
@@ -45,18 +46,18 @@ public class CardService {
     }
 
     public void updateById(Long cardId, String name,
-                      String barcode, Long ownerId ) throws NotExistsException {
-        if (!cardRepository.existsById(cardId)){
-            throw new NotExistsException("Card not exists"+cardId);
+                           String barcode, Long ownerId) throws NotExistsException {
+        if (!cardRepository.existsById(cardId)) {
+            throw new NotExistsException("Card not exists" + cardId);
         }
         Card updated = cardRepository.getCardById(cardId);
-        if (name != null){
+        if (name != null) {
             updated.setName(name);
         }
-        if (barcode != null){
+        if (barcode != null) {
             updated.setBarcode(barcode);
         }
-        if (ownerId != null){
+        if (ownerId != null) {
             updated.setOwnerId(ownerId);
         }
         cardRepository.cardUpdate(updated.getId(),

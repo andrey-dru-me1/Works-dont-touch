@@ -3,9 +3,9 @@ package ru.works.dont.touch.server.servicies;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.User;
-import ru.works.dont.touch.server.repositories.UserRepository;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.repositories.UserRepository;
 
 @Service
 public class UserService {
@@ -22,9 +22,11 @@ public class UserService {
     public boolean userExist(User user) {
         return userExist(user.getLogin(), user.getPassword());
     }
+
     public boolean userExist(String login, byte[] password) {
         return userRepository.existsByLoginAndPassword(login, password);
     }
+
     public boolean userExistByLogin(String login) {
         return userRepository.existsByLogin(login);
     }
@@ -36,9 +38,10 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
+
     public User saveNewUser(String login, byte[] password) throws ExistsException {
-        if (userRepository.existsByLogin(login)){
-            throw new ExistsException("User exists by this login: "+login );
+        if (userRepository.existsByLogin(login)) {
+            throw new ExistsException("User exists by this login: " + login);
         }
 
         User newUser = new User();
@@ -58,15 +61,15 @@ public class UserService {
 
     @Transactional
     public void changeByLogin(String login, byte[] password) throws NotExistsException {
-        if (!userExistByLogin(login)){
-            throw new NotExistsException("Not exists: "+ login);
+        if (!userExistByLogin(login)) {
+            throw new NotExistsException("Not exists: " + login);
         }
         userRepository.changeByLogin(login, password);
 
     }
 
     public User getUserByLogin(String login) throws NotExistsException {
-        if (!userExistByLogin(login)){
+        if (!userExistByLogin(login)) {
             throw new NotExistsException("User by this login" +
                     "doesnt exist: " + login);
         }

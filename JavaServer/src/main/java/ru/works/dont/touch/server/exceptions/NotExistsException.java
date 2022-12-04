@@ -9,7 +9,7 @@ public class NotExistsException extends DataBaseException {
         super(message);
     }
 
-    public NotExistsException(){
+    public NotExistsException() {
         super("Not exists");
     }
 

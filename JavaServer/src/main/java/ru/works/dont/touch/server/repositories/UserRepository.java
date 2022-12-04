@@ -14,7 +14,9 @@ import java.util.stream.Stream;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
     boolean existsByLogin(String login);
+
     boolean existsByLoginAndPassword(String login, byte[] password);
+
     boolean deleteByLogin(String login);
 
     User findByLoginAndPassword(String login, byte[] password);
@@ -25,7 +27,6 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     @Query("SELECT u from User u")
     Stream<User> findAllStream();
-
 
 
     @Modifying

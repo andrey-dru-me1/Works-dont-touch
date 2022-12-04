@@ -8,7 +8,8 @@ public class ExistsException extends DataBaseException {
     public ExistsException(String message) {
         super(message);
     }
-    public ExistsException(){
+
+    public ExistsException() {
         super("Something is already exists");
     }
 }

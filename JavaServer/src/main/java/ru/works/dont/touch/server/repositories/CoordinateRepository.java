@@ -10,7 +10,9 @@ import java.util.stream.Stream;
 
 public interface CoordinateRepository extends CrudRepository<Coordinate, Integer> {
     Iterable<Coordinate> findAll();
+
     Stream<Coordinate> findAllByLocationId(Long locationId);
+
     Coordinate findById(Long id);
 
     @Query("SELECT crd " +

@@ -3,45 +3,50 @@ package ru.works.dont.touch.server.servicies;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Location;
-import ru.works.dont.touch.server.repositories.LocationRepository;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.repositories.LocationRepository;
 
 import java.util.stream.Stream;
 
 @Service
 public class LocationService {
     private LocationRepository locationRepository;
-    public LocationService(LocationRepository locationRepository){
-        this.locationRepository= locationRepository;
+
+    public LocationService(LocationRepository locationRepository) {
+        this.locationRepository = locationRepository;
     }
 
 
-    public Iterable<Location> findAll(){
+    public Iterable<Location> findAll() {
         return locationRepository.findAll();
     }
-    public Stream<Location> findAllByCardId(Long cardId){
+
+    public Stream<Location> findAllByCardId(Long cardId) {
         return locationRepository.findAllByCardId(cardId);
     }
-    public Stream<Location> findAllCustom(Boolean isCustom){
+
+    public Stream<Location> findAllCustom(Boolean isCustom) {
         return locationRepository.findAllByCustom(isCustom);
     }
 
 
-    public void deleteById(Long id){
+    public void deleteById(Long id) {
         locationRepository.deleteAllById(id);
     }
-    public void deleteByCardId(Long cardId){
+
+    public void deleteByCardId(Long cardId) {
         locationRepository.deleteAllByCardId(cardId);
     }
 
     public Location save(Location location) throws ExistsException {
-        if (locationRepository.existsById(location.getId())){
+        if (locationRepository.existsById(location.getId())) {
             throw new ExistsException("location already exists: "
-            + location);
+                    + location);
         }
         return locationRepository.save(location);
     }
+
     public Location save(boolean isCustom,
                          String name,
                          long cardId) throws ExistsException {
@@ -54,6 +59,7 @@ public class LocationService {
 
     /**
      * Set null in field, if it must not be changed
+     *
      * @param locationId
      * @param isCustom
      * @param name
@@ -65,17 +71,17 @@ public class LocationService {
                            Boolean isCustom,
                            String name,
                            Long cardId) throws NotExistsException {
-        if (!locationRepository.existsById(locationId)){
-            throw new NotExistsException("Location doesnt exists: "+locationId);
+        if (!locationRepository.existsById(locationId)) {
+            throw new NotExistsException("Location doesnt exists: " + locationId);
         }
         Location location = locationRepository.getLocationById(locationId);
-        if (isCustom != null){
+        if (isCustom != null) {
             location.setCustom(isCustom);
         }
-        if (name != null){
+        if (name != null) {
             location.setName(name);
         }
-        if (cardId != null){
+        if (cardId != null) {
             location.setCardId(cardId);
         }
         locationRepository.update(location.getId(),

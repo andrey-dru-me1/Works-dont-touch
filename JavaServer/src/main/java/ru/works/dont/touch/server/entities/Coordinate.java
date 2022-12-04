@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 @Entity
 public class Coordinate {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private Long locationId;

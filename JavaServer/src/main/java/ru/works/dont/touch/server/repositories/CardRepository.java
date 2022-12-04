@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 
 public interface CardRepository extends CrudRepository<Card, Integer> {
     Iterable<Card> findAll();
+
     Iterable<Card> findAllByOwnerId(Long ownerId);
+
     boolean deleteAllByOwnerId(Long ownerId);
 
 
@@ -23,6 +25,7 @@ public interface CardRepository extends CrudRepository<Card, Integer> {
     <S extends Card> S save(S entity);
 
     boolean existsById(Long id);
+
     boolean existsByOwnerId(Long id);
 
     Card getCardById(Long id);
