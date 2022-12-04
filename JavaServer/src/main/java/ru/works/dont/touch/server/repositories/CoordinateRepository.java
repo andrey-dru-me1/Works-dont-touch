@@ -5,15 +5,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import ru.works.dont.touch.server.entities.Coordinate;
+import ru.works.dont.touch.server.entities.Image;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface CoordinateRepository extends CrudRepository<Coordinate, Integer> {
     Iterable<Coordinate> findAll();
 
-    Stream<Coordinate> findAllByLocationId(Long locationId);
+    Iterable<Coordinate> findAllByLocationId(Long locationId);
 
-    Coordinate findById(Long id);
+    Optional<Coordinate> findById(Long id);
 
     @Query("SELECT crd " +
             "FROM Coordinate crd " +
@@ -22,7 +24,7 @@ public interface CoordinateRepository extends CrudRepository<Coordinate, Integer
             "left join Card card " +
             "on loc.cardId = card.id " +
             "where card.id = :cardId")
-    Stream<Coordinate> findByCardId(@Param("cardId") Long cardId);
+    Iterable<Coordinate> findByCardId(@Param("cardId") Long cardId);
 
     @Modifying
     @Query("update Coordinate coord " +

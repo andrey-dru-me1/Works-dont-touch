@@ -11,9 +11,9 @@ import java.util.stream.Stream;
 public interface LocationRepository extends CrudRepository<Location, Long> {
     Location getLocationById(Long locationId);
 
-    Stream<Location> findAllByCardId(Long cardId);
+    Iterable<Location> findAllByCardId(Long cardId);
 
-    Stream<Location> findAllByCustom(boolean isCustom);
+    Iterable<Location> findAllByCustom(boolean isCustom);
 
     void deleteAllById(Long id);
 

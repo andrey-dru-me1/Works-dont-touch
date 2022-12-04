@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 public interface ImageRepository extends CrudRepository<Image, Integer> {
     Image findById(Long id);
+    Iterable<Image> findByCardId(Long id);
 
     void deleteById(Long id);
 
@@ -16,7 +17,7 @@ public interface ImageRepository extends CrudRepository<Image, Integer> {
 
     boolean existsByCardId(Long cardId);
 
-    Stream<Image> findAllByCardId(Long cardId);
+    Iterable<Image> findAllByCardId(Long cardId);
 
 
 }

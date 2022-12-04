@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import ru.works.dont.touch.server.entities.User;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -20,13 +21,14 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     boolean deleteByLogin(String login);
 
     User findByLoginAndPassword(String login, byte[] password);
+    Optional<User> findById(Long id);
 
     User findByLogin(String login);
 
     Iterable<User> findAll();
 
     @Query("SELECT u from User u")
-    Stream<User> findAllStream();
+    Iterable<User> findAllStream();
 
 
     @Modifying

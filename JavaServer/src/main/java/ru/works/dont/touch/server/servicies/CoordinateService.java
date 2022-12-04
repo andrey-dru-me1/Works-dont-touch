@@ -6,6 +6,7 @@ import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.CoordinateRepository;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class CoordinateService {
@@ -20,23 +21,34 @@ public class CoordinateService {
         return coordinateRepository.findAll();
     }
 
-    public Stream<Coordinate> findAllByCardId(Long cardId) {
+    public Iterable<Coordinate> findAllByCardId(Long cardId) {
         return coordinateRepository.findByCardId(cardId);
     }
 
-    public Coordinate findById(Long id) {
-        return coordinateRepository.findById(id);
+    public Coordinate findById(Long id) throws NotExistsException {
+        var coord = coordinateRepository.findById(id);
+        if (coord.isEmpty()) {
+            throw new NotExistsException("Not exists" + id);
+        }
+        return coord.get();
+    }
+
+    public Iterable<Coordinate> findByLocationId(Long locationId) {
+        return coordinateRepository.findAllByLocationId(locationId);
     }
 
 
+    @Transactional
     public void deleteById(Long id) {
         coordinateRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteByCardId(Long cardId) {
         coordinateRepository.deleteAllByLocationId(cardId);
     }
 
+    @Transactional
     public Coordinate save(Coordinate coordinate) throws ExistsException {
         if (coordinateRepository.existsById(coordinate.getId())) {
             throw new ExistsException("location already exists: "
@@ -45,6 +57,7 @@ public class CoordinateService {
         return coordinateRepository.save(coordinate);
     }
 
+    @Transactional
     public Coordinate save(Long locationId,
                            Double latitude,
                            Double longitude) throws ExistsException {
@@ -70,10 +83,12 @@ public class CoordinateService {
                              Long locationId,
                              Double latitude,
                              Double longitude) throws NotExistsException {
-        if (!coordinateRepository.existsById(locationId)) {
+
+        Optional<Coordinate> loc = coordinateRepository.findById(coordId);
+        if (loc.isEmpty()) {
             throw new NotExistsException("Location doesnt exists: " + locationId);
         }
-        Coordinate location = coordinateRepository.findById(coordId);
+        var location = loc.get();
         if (locationId != null) {
             location.setLocationId(locationId);
         }

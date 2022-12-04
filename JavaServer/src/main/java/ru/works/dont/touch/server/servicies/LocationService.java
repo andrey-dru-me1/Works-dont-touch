@@ -7,7 +7,7 @@ import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.LocationRepository;
 
-import java.util.stream.Stream;
+import java.util.Optional;
 
 @Service
 public class LocationService {
@@ -22,23 +22,33 @@ public class LocationService {
         return locationRepository.findAll();
     }
 
-    public Stream<Location> findAllByCardId(Long cardId) {
+    public Iterable<Location> findAllByCardId(Long cardId) {
         return locationRepository.findAllByCardId(cardId);
     }
 
-    public Stream<Location> findAllCustom(Boolean isCustom) {
+    public Iterable<Location> findAllCustom(Boolean isCustom) {
         return locationRepository.findAllByCustom(isCustom);
     }
 
+    public Location findById(Long locationId) throws NotExistsException {
+        Optional<Location> location = locationRepository.findById(locationId);
+        if (location.isEmpty()) {
+            throw new NotExistsException("Location doesn't exist" + locationId);
+        }
+        return location.get();
+    }
 
+    @Transactional
     public void deleteById(Long id) {
         locationRepository.deleteAllById(id);
     }
 
+    @Transactional
     public void deleteByCardId(Long cardId) {
         locationRepository.deleteAllByCardId(cardId);
     }
 
+    @Transactional
     public Location save(Location location) throws ExistsException {
         if (locationRepository.existsById(location.getId())) {
             throw new ExistsException("location already exists: "
@@ -46,7 +56,7 @@ public class LocationService {
         }
         return locationRepository.save(location);
     }
-
+    @Transactional
     public Location save(boolean isCustom,
                          String name,
                          long cardId) throws ExistsException {
