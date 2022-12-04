@@ -38,14 +38,17 @@ public class LocationService {
         return location.get();
     }
 
+    @Transactional
     public void deleteById(Long id) {
         locationRepository.deleteAllById(id);
     }
 
+    @Transactional
     public void deleteByCardId(Long cardId) {
         locationRepository.deleteAllByCardId(cardId);
     }
 
+    @Transactional
     public Location save(Location location) throws ExistsException {
         if (locationRepository.existsById(location.getId())) {
             throw new ExistsException("location already exists: "
@@ -53,7 +56,7 @@ public class LocationService {
         }
         return locationRepository.save(location);
     }
-
+    @Transactional
     public Location save(boolean isCustom,
                          String name,
                          long cardId) throws ExistsException {

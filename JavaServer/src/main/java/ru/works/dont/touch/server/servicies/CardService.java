@@ -27,6 +27,7 @@ public class CardService {
         return cardRepository.findAll();
     }
 
+    @Transactional
     public Card saveCard(Card newCard) throws ExistsException {
         if (cardRepository.existsById(newCard.getId())) {
             throw new ExistsException();
@@ -34,6 +35,7 @@ public class CardService {
         return cardRepository.save(newCard);
     }
 
+    @Transactional
     public Card saveCard(String name, String barcode,
                             Long ownerId) throws ExistsException {
         Card newCard = new Card();

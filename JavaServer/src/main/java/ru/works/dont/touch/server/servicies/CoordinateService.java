@@ -38,14 +38,17 @@ public class CoordinateService {
     }
 
 
+    @Transactional
     public void deleteById(Long id) {
         coordinateRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteByCardId(Long cardId) {
         coordinateRepository.deleteAllByLocationId(cardId);
     }
 
+    @Transactional
     public Coordinate save(Coordinate coordinate) throws ExistsException {
         if (coordinateRepository.existsById(coordinate.getId())) {
             throw new ExistsException("location already exists: "
@@ -54,6 +57,7 @@ public class CoordinateService {
         return coordinateRepository.save(coordinate);
     }
 
+    @Transactional
     public Coordinate save(Long locationId,
                            Double latitude,
                            Double longitude) throws ExistsException {

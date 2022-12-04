@@ -1,5 +1,6 @@
 package ru.works.dont.touch.server.servicies;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Image;
 import ru.works.dont.touch.server.exceptions.ExistsException;
@@ -30,6 +31,7 @@ public class ImageService {
         return imageRepository.findByCardId(cardId);
     }
 
+    @Transactional
     public void deleteById(Long id) {
         imageRepository.deleteById(id);
     }
@@ -39,6 +41,7 @@ public class ImageService {
      *
      * @param cardId the id of card
      */
+    @Transactional
     public void deleteByCardId(Long cardId) {
         imageRepository.deleteAllByCardId(cardId);
     }
@@ -48,6 +51,7 @@ public class ImageService {
         return imageRepository.findAllByCardId(cardId);
     }
 
+    @Transactional
     public Image saveImage(Image image) throws ExistsException {
         if (imageRepository.existsByCardId(image.getId())) {
             throw new ExistsException("Card already exists");
@@ -55,6 +59,7 @@ public class ImageService {
         return imageRepository.save(image);
     }
 
+    @Transactional
     public Image saveImage(Long cardId) {
         Image newImage = new Image();
         newImage.setCardId(cardId);

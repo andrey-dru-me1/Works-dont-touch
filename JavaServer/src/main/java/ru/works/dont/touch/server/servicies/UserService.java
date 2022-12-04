@@ -31,13 +31,15 @@ public class UserService {
         return userRepository.existsByLogin(login);
     }
 
+    @Transactional
     public User saveNewUser(User user) throws ExistsException {
-        if (!userExist(user)) {
+        if (userExist(user)) {
             throw new ExistsException("User already exists: " + user);
         }
         return userRepository.save(user);
     }
 
+    @Transactional
     public User saveNewUser(String login, byte[] password) throws ExistsException {
         if (userRepository.existsByLogin(login)) {
             throw new ExistsException("User exists by this login: " + login);
@@ -49,10 +51,12 @@ public class UserService {
         return saveNewUser(newUser);
     }
 
+    @Transactional
     public boolean deleteUserByLogin(String login) {
         return userRepository.deleteByLogin(login);
     }
 
+    @Transactional
     public void deleteAllUsers() {
         userRepository.deleteAll();
     }
