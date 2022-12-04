@@ -3,20 +3,41 @@ package ru.works.dont.touch.server.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Foo")
 public class Location {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "employee_seq")
-    private int id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "location_seq")
+    private Long id;
 
-    private Long placeId;
+    private Boolean custom;
+    private String name;
 
-    public Long getPlaceId() {
-        return placeId;
+    private Long cardId;
+
+    public Long getId() {
+        return id;
     }
 
-    public void setPlaceId(Long placeId) {
-        this.placeId = placeId;
+    public boolean getCustom() {
+        return custom;
     }
 
+    public void setCustom(boolean custom) {
+        this.custom = custom;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getCardId() {
+        return cardId;
+    }
+
+    public void setCardId(Long cardId) {
+        this.cardId = cardId;
+    }
 }

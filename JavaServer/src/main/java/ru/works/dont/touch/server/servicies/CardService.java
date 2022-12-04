@@ -3,6 +3,7 @@ package ru.works.dont.touch.server.servicies;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.repositories.CardRepository;
+import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
 
 @Service
 public class CardService {
@@ -11,8 +12,15 @@ public class CardService {
         this.cardRepository = cardRepository;
     }
 
-    public Card getCardByLogin(String login){
+    public Iterable<Card> getCardsByLogin(String login){
         return cardRepository.findByUserLogin(login);
+    }
+    public Iterable<Card> getCardsByUserId(Long ownerId){
+        return cardRepository.findAllByOwnerId(ownerId);
+    }
+
+    public Iterable<Card> findAll(){
+        return cardRepository.findAll();
     }
 
     public boolean saveCard(Card newCard){
@@ -24,6 +32,7 @@ public class CardService {
             return true;
         }
     }
+
     public boolean saveCard(String name, String barcode,
                             Long ownerId){
         Card newCard = new Card();
@@ -34,7 +43,10 @@ public class CardService {
     }
 
     public void updateById(Long cardId, String name,
-                      String barcode, Long ownerId ){
+                      String barcode, Long ownerId ) throws NotExistsException {
+        if (!cardRepository.existsById(cardId)){
+            throw new NotExistsException("Card not exists"+cardId);
+        }
         Card updated = cardRepository.getCardById(cardId);
         if (name != null){
             updated.setName(name);

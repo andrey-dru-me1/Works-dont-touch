@@ -10,3 +10,6 @@ GET localhost:8080/demo/up
 
 ###
 GET localhost:8080/demo/gbl
+
+###
+GET localhost:8080/demo/userlog

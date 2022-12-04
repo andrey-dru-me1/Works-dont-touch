@@ -1,12 +1,16 @@
 package ru.works.dont.touch.server.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.servicies.UserService;
+import ru.works.dont.touch.server.servicies.exceptions.ExistsException;
+import ru.works.dont.touch.server.servicies.exceptions.NotExistsException;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/demo") // This means URL's start with /demo (after Application path)
@@ -22,9 +26,13 @@ public class MainController {
         /**/
         byte[] fig = new byte[1];
         fig[0] = 5;
-        boolean saved = userService.saveNewUser("25", fig);
+        try {
+            userService.saveNewUser("25", fig);
+            return "saved";
+        } catch (ExistsException e) {
+            return "Not saved";
+        }
 
-        return saved? "Saved": "Not saved";
     }
 
     @GetMapping(path="/al")
@@ -34,14 +42,31 @@ public class MainController {
     }
 
     @GetMapping(path="/up")
-    public @ResponseBody boolean updateUser() {
+    public @ResponseBody String updateUser() {
         byte[] psw = new byte[1];
         psw[0] = 2;
-        return userService.changeByLogin("25", psw);
+        try {
+            userService.changeByLogin("30", psw);
+            return "Saved";
+        } catch (NotExistsException e) {
+            return e.getMessage();
+        }
     }
 
     @GetMapping(path="/gbl")
     public @ResponseBody byte[] getByLogin() {
-        return userService.getPasswordByLogin("25");
+        try {
+            return userService.getPasswordByLogin("30");
+        } catch (NotExistsException e) {
+            return null;
+        }
+    }
+    @GetMapping(path="/userlog")
+    public @ResponseBody User getUserByLogin() {
+        try {
+            return userService.getUserByLogin("25");
+        } catch (NotExistsException e) {
+            return null;
+        }
     }
 }

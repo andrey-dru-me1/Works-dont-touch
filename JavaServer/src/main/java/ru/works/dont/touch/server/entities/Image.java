@@ -11,23 +11,19 @@ public class Image {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private String name;
 
-    private boolean isCustom;
+    private Long cardId;
 
-    public String getName() {
-        return name;
+
+    public Long getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Long getCardId() {
+        return cardId;
     }
 
-    public boolean isCustom() {
-        return isCustom;
-    }
-
-    public void setCustom(boolean custom) {
-        isCustom = custom;
+    public void setCardId(Long imageId) {
+        this.cardId = imageId;
     }
 }

@@ -14,12 +14,13 @@ public interface CardRepository extends CrudRepository<Card, Integer> {
             "left join User user " +
             "on card.ownerId = user.id " +
             "where user.login = ?1")
-    Card findByUserLogin(String userLogin);
+    Iterable<Card> findByUserLogin(String userLogin);
 
     @Override
     <S extends Card> S save(S entity);
 
     boolean existsById(Long id);
+    boolean existsByOwnerId(Long id);
 
     Card getCardById(Long id);
 
