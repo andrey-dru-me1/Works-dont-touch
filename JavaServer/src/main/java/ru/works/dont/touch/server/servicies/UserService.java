@@ -82,11 +82,19 @@ public class UserService {
 
     @Transactional
     public boolean deleteUserByLogin(String login) {
+        try {
+            idCacheMap.remove(getUserByLogin(login).getId());
+        } catch (NotExistsException ignored) {
+
+        }
+        loginCacheMap.remove(login);
         return userRepository.deleteByLogin(login);
     }
 
     @Transactional
     public void deleteAllUsers() {
+        idCacheMap.clear();
+        loginCacheMap.clear();
         userRepository.deleteAll();
     }
 
