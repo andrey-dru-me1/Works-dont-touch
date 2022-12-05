@@ -1,36 +1,77 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
+import android.Manifest
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.os.ParcelFileDescriptor
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
+import coil.compose.rememberImagePainter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.UpdateType
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
+import java.io.File
 
 class MainActivity : ComponentActivity(), UpdateListener {
 
-    private val cards = mutableStateListOf<Card>()
+    private val cards: SnapshotStateList<MutableState<Card>> = mutableStateListOf()
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // feature requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
+            }
+        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        requestPermissionLauncher.launch(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
 
         setContent {
             KotlinClientTheme {
@@ -40,6 +81,8 @@ class MainActivity : ComponentActivity(), UpdateListener {
                     color = MaterialTheme.colors.background
                 ) {
                     val list = remember { cards }
+//                    val img: MutableState<Uri?> = remember { image }
+//                    Image(painter = rememberImagePainter(data = img.value), contentDescription = "sth")
                     CardsGrid(list)
 
                     AddCardButton()
@@ -49,13 +92,15 @@ class MainActivity : ComponentActivity(), UpdateListener {
         DataController.getInstance().addListener(this)
     }
 
-    override fun update() {
-        cards.clear()
-        cards.addAll(DataController.getInstance().cards)
+    override fun update(update: Update) {
+        if(update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
+            cards.clear()
+            cards.addAll(DataController.getInstance().cards.map { mutableStateOf(it) })
+        }
     }
 
     @Composable
-    fun CardsGrid(cards: Collection<Card>) {
+    fun CardsGrid(cards: SnapshotStateList<MutableState<Card>>) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
         ) {
@@ -63,26 +108,32 @@ class MainActivity : ComponentActivity(), UpdateListener {
         }
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     @Composable
-    fun CardView(card: Card) {
+    fun CardView(card: MutableState<Card>) {
 
         val mContext = LocalContext.current
 
         IconButton(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(15.dp, 5.dp),
+                .padding(10.dp, 5.dp),
             onClick = {
                 mContext.startActivity(Intent(mContext, CardInfoActivity::class.java))
             },
         )
         {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = card.name,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier.fillMaxSize()
-            )
+            val sth = remember { card }
+            Column {
+                Image(
+                    painter = rememberImagePainter(data = sth.value.image),
+                    contentDescription = sth.value.name,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+                Text(text = sth.value.name + "Text")
+            }
         }
     }
 

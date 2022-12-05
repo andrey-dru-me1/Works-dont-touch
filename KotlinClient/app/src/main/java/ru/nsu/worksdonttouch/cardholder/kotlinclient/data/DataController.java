@@ -12,6 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.ReplaceCardUpdate;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.UpdateType;
 
 public class DataController {
 
@@ -34,9 +38,9 @@ public class DataController {
         return instance;
     }
 
-    private void onUpdate() {
+    private void onUpdate(Update update) {
         for(UpdateListener listener : listeners) {
-            listener.update();
+            listener.update(update);
         }
     }
 
@@ -55,7 +59,10 @@ public class DataController {
     public Card putCard(Card card) {
         Card removedCard = cards.put(card.getId(), card);
         logger.log(Level.INFO, "old card: " + removedCard + " new card " + card);
-        onUpdate();
+        if (removedCard == null)
+            onUpdate(new AddCardUpdate(card));
+        else
+            onUpdate(new ReplaceCardUpdate(removedCard, card));
         return removedCard;
     }
 

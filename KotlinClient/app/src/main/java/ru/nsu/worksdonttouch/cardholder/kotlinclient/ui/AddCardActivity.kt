@@ -1,12 +1,15 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.*
@@ -24,6 +27,7 @@ class AddCardActivity : ComponentActivity() {
 
     var cardName: String = ""
     var barCode: String = ""
+    var image: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,12 +82,11 @@ class AddCardActivity : ComponentActivity() {
 
     @Composable
     fun PickImageButton() {
-        val imageData = remember { mutableStateOf<Uri?>(null) }
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-                imageData.value = it
+                image = it
             }
-        Button(onClick = { launcher.launch("image/*") }) {
+        Button(onClick = {launcher.launch("image/*") }) {
             Text("Pick an image")
         }
     }
@@ -91,7 +94,7 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun SaveButton() {
         Button(onClick = {
-            DataController.getInstance().putCard(Card(DataController.getInstance().nextId(), "name", null))
+            DataController.getInstance().putCard(Card(DataController.getInstance().nextId(), cardName, barCode, image))
             finish()
         }) {
             Text("OK")
