@@ -1,8 +1,8 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.aspectj.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Image;
@@ -10,18 +10,16 @@ import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.ImageRepository;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 public class ImageService {
     @Value("${image.directory}")
     private String imageDirectory;
-    private ImageRepository imageRepository;
+    private final ImageRepository imageRepository;
 
     public ImageService(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
@@ -44,6 +42,7 @@ public class ImageService {
     @Transactional
     public void deleteById(Long id) {
         imageRepository.deleteById(id);
+        //TODO: добавить в remove возвращение изображения (если возможно) и удалять соответствующий файл
     }
 
     /**
@@ -54,6 +53,8 @@ public class ImageService {
     @Transactional
     public void deleteByCardId(Long cardId) {
         imageRepository.deleteAllByCardId(cardId);
+        File dir = getDirectory(cardId);
+        dir.delete();
     }
 
 
@@ -73,43 +74,24 @@ public class ImageService {
     public Image saveImage(Long cardId) throws IOException {
         Image newImage = new Image();
         newImage.setCardId(cardId);
-        var savedCard = imageRepository.save(newImage);
-
-        return savedCard;
+        return imageRepository.save(newImage);
     }
 
     public URI saveImageInMemory(Image image, InputStream inputStream) throws NotExistsException, IOException {
         if (image.getId() == null){
             throw new NotExistsException();
         }
-
-        File dir = new File(imageDirectory
-                + "/CardId_"
-                + image.getCardId() + "/");
-
-        if (!dir.exists()){
-            dir.mkdirs();
-        }
-
+        File dir = getDirectory(image.getCardId());
+        dir.mkdirs();
         File file = new File(dir, "Image_"+image.getId());
-        try (BufferedOutputStream bufferedWriter = new BufferedOutputStream(new FileOutputStream(file))) {
-            int readReturn;
-            byte[] buf = new byte[10000];
-            while (true){
-                readReturn = inputStream.read(buf);
-                if (readReturn<=0){
-                    break;
-                }
-                bufferedWriter.write(buf,0, readReturn);
-            }
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            FileUtil.copyStream(inputStream, outputStream);
         }
         return file.toURI();
     }
 
     public URI getUriByImage(Image image) throws NotExistsException {
-        File file = new File(imageDirectory +
-                "/CardId_" + image.getCardId()
-                + "/Image_" + image.getId());
+        File file = new File(getDirectory(image.getCardId()), "Image_" + image.getId());
         if (!file.exists()){
             throw new NotExistsException("Image not Exists");
         }
@@ -118,6 +100,7 @@ public class ImageService {
     public URI getUriByImageId(Long imageId) throws NotExistsException {
         return getUriByImage(findImageById(imageId));
     }
+
     public List<URI> getUrisByCardId(Long cardId){
         var images = findAllByCardId(cardId);
         List<URI> uriList = new ArrayList<>();
@@ -125,9 +108,14 @@ public class ImageService {
             try {
                 uriList.add(getUriByImage(image));
             } catch (NotExistsException e) {
-                continue;
+                continue; // Ignore exceptions? Strange code. I don't know how fix it, maybe combine database and file methods
             }
         }
         return uriList;
     }
+
+    private File getDirectory(@NotNull Long cardId) {
+        return new File(imageDirectory, cardId.toString());
+    }
+
 }
