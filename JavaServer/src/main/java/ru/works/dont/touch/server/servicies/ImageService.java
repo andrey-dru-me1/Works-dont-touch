@@ -1,16 +1,26 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.aspectj.util.FileUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Image;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.ImageRepository;
 
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Service
 public class ImageService {
+    @Value("${image.directory}")
+    private String imageDirectory;
     private ImageRepository imageRepository;
 
     public ImageService(ImageRepository imageRepository) {
@@ -60,11 +70,64 @@ public class ImageService {
     }
 
     @Transactional
-    public Image saveImage(Long cardId) {
+    public Image saveImage(Long cardId) throws IOException {
         Image newImage = new Image();
         newImage.setCardId(cardId);
-        return imageRepository.save(newImage);
+        var savedCard = imageRepository.save(newImage);
+
+        return savedCard;
     }
 
+    public URI saveImageInMemory(Image image, InputStream inputStream) throws NotExistsException, IOException {
+        if (image.getId() == null){
+            throw new NotExistsException();
+        }
 
+        File dir = new File(imageDirectory
+                + "/CardId_"
+                + image.getCardId() + "/");
+
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        File file = new File(dir, "Image_"+image.getId());
+        try (BufferedOutputStream bufferedWriter = new BufferedOutputStream(new FileOutputStream(file))) {
+            int readReturn;
+            byte[] buf = new byte[10000];
+            while (true){
+                readReturn = inputStream.read(buf);
+                if (readReturn<=0){
+                    break;
+                }
+                bufferedWriter.write(buf,0, readReturn);
+            }
+        }
+        return file.toURI();
+    }
+
+    public URI getUriByImage(Image image) throws NotExistsException {
+        File file = new File(imageDirectory +
+                "/CardId_" + image.getCardId()
+                + "/Image_" + image.getId());
+        if (!file.exists()){
+            throw new NotExistsException("Image not Exists");
+        }
+        return file.toURI();
+    }
+    public URI getUriByImageId(Long imageId) throws NotExistsException {
+        return getUriByImage(findImageById(imageId));
+    }
+    public List<URI> getUrisByCardId(Long cardId){
+        var images = findAllByCardId(cardId);
+        List<URI> uriList = new ArrayList<>();
+        for (Image image : images) {
+            try {
+                uriList.add(getUriByImage(image));
+            } catch (NotExistsException e) {
+                continue;
+            }
+        }
+        return uriList;
+    }
 }
