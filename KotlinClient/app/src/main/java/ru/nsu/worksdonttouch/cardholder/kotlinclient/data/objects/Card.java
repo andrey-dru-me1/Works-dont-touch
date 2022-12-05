@@ -2,12 +2,14 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects;
 
 import android.net.Uri;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class Card {
-
-    private final long id;
 
     private String name;
 
@@ -15,15 +17,26 @@ public class Card {
 
     private Uri image;
 
-    public Card(long id, @NotNull String name, @Nullable String barcode, Uri image) {
-        this.id = id;
+    public Card(@NotNull String name, @Nullable String barcode, Uri image) {
         this.name = name;
         this.barcode = barcode;
         this.image = image;
     }
 
-    public long getId() {
-        return id;
+    @JsonCreator
+    public Card(
+            @JsonProperty("name")
+            @NotNull
+                    String name,
+            @JsonProperty("barcode")
+            @Nullable
+                    String barcode,
+            @JsonProperty("image")
+                    String image
+    ) {
+        this.name = name;
+        this.barcode = barcode;
+        this.image = Uri.parse(image);
     }
 
     public String getName() {
@@ -38,11 +51,15 @@ public class Card {
         return image;
     }
 
+    @JsonGetter("image")
+    public String getStringImage() {
+        return this.image.toString();
+    }
+
     @Override
     public String toString() {
         return "Card{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", barcode='" + barcode + '\'' +
                 ", image=" + image +
                 '}';

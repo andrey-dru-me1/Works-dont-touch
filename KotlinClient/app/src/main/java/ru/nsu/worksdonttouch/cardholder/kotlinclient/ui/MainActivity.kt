@@ -39,6 +39,9 @@ class MainActivity : ComponentActivity(), UpdateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        DataController.getInstance().putCardsFromFile()
+        cards.addAll(DataController.getInstance().cards)
+
         val requestPermissionLauncher =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()

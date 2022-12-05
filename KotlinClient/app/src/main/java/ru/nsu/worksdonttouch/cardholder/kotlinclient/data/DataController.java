@@ -2,6 +2,7 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
 import androidx.annotation.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.ReplaceCardUpdate;
@@ -23,9 +25,7 @@ public class DataController {
 
     private final Logger logger = Logger.getLogger(DataController.class.getName());
 
-    private final Map<Long, Card> cards = Collections.synchronizedMap(new HashMap<>());
-
-    private long id = 0;
+    private final Collection<Card> cards = new ArrayList<>();
 
     private final List<UpdateListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
@@ -39,6 +39,7 @@ public class DataController {
     }
 
     private void onUpdate(Update update) {
+        CardsData.saveCards(this.getCards());
         for(UpdateListener listener : listeners) {
             listener.update(update);
         }
@@ -52,26 +53,23 @@ public class DataController {
         listeners.remove(listener);
     }
 
-    public Card getCard(long id) {
-        return cards.get(id);
+    public void putCard(Card card) {
+        cards.add(card);
+        logger.log(Level.INFO, "new card: " + card);
+        onUpdate(new AddCardUpdate(card));
     }
 
-    public Card putCard(Card card) {
-        Card removedCard = cards.put(card.getId(), card);
-        logger.log(Level.INFO, "old card: " + removedCard + " new card " + card);
-        if (removedCard == null)
-            onUpdate(new AddCardUpdate(card));
-        else
-            onUpdate(new ReplaceCardUpdate(removedCard, card));
-        return removedCard;
+    public void putCardsFromFile() {
+        Collection<Card> cardList = CardsData.getCardsFromFile();
+
+        if(cardList == null) return;
+
+        cards.addAll(cardList);
+        logger.log(Level.INFO, "loaded cards:  " + cards);
     }
 
     public Collection<Card> getCards() {
-        return cards.values();
-    }
-
-    public long nextId() {
-        return this.id++;
+        return cards;
     }
 
 }

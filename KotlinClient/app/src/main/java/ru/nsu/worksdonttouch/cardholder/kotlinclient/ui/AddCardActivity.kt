@@ -18,6 +18,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsData
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
 
 class AddCardActivity : ComponentActivity() {
@@ -91,7 +92,7 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun SaveButton() {
         Button(onClick = {
-            DataController.getInstance().putCard(Card(DataController.getInstance().nextId(), cardName, barCode, image))
+            DataController.getInstance().putCard(Card(cardName, barCode, image))
             finish()
         }) {
             Text("OK")
