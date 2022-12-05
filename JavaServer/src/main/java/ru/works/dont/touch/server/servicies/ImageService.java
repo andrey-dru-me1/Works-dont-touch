@@ -42,8 +42,10 @@ public class ImageService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        imageRepository.deleteById(id);
+    public Image deleteById(Long id) throws NotExistsException {
+        var img = findImageById(id);
+        getImageFile(img).delete();
+        return img;
     }
 
     /**
@@ -52,8 +54,19 @@ public class ImageService {
      * @param cardId the id of card
      */
     @Transactional
-    public void deleteByCardId(Long cardId) {
+    public Iterable<Image> deleteByCardId(Long cardId) throws NotExistsException {
+        if (!imageRepository.existsByCardId(cardId)){
+            throw new NotExistsException("Image with cardId not exist, id: "+cardId);
+        }
+        var imgs = imageRepository.findByCardId(cardId);
         imageRepository.deleteAllByCardId(cardId);
+        for (Image img : imgs) {
+            var fileImg = getImageFile(img);
+            if (fileImg.exists()){
+                fileImg.delete();
+            }
+        }
+        return imgs;
     }
 
 
@@ -107,9 +120,7 @@ public class ImageService {
     }
 
     public URI getUriByImage(Image image) throws NotExistsException {
-        File file = new File(imageDirectory +
-                "/CardId_" + image.getCardId()
-                + "/Image_" + image.getId());
+        File file = getImageFile(image);
         if (!file.exists()){
             throw new NotExistsException("Image not Exists");
         }
@@ -129,5 +140,11 @@ public class ImageService {
             }
         }
         return uriList;
+    }
+
+    private File getImageFile(Image image){
+        return new File(imageDirectory +
+                "/CardId_" + image.getCardId()
+                + "/Image_" + image.getId());
     }
 }
