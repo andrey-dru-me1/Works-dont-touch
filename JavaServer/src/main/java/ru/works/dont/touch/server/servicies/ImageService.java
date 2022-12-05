@@ -1,6 +1,8 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.aspectj.util.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Image;
@@ -80,31 +82,27 @@ public class ImageService {
         if (image.getId() == null){
             throw new NotExistsException();
         }
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+
         File dir = new File(imageDirectory
                 + "/CardId_"
                 + image.getCardId() + "/");
+
         if (!dir.exists()){
             dir.mkdirs();
         }
-        System.out.println(dir.getPath());
+
         File file = new File(dir, "Image_"+image.getId());
-        System.out.println(file);
-        if (!file.exists()){
-            //file.createNewFile();
-        }
         try (BufferedOutputStream bufferedWriter = new BufferedOutputStream(new FileOutputStream(file))) {
-            int readReturn = 0;
-            byte[] buf = new byte[1];
+            int readReturn;
+            byte[] buf = new byte[10000];
             while (true){
-                readReturn = bufferedInputStream.read(buf);
+                readReturn = inputStream.read(buf);
                 if (readReturn<=0){
                     break;
                 }
                 bufferedWriter.write(buf,0, readReturn);
             }
         }
-        System.out.println(file.getPath());
         return file.toURI();
     }
 
