@@ -35,7 +35,7 @@ public class AuthorizationRestApi {
         Optional<User> user = authorizationService.authorization(authorization);
         return user
                 .map(
-                        value -> new SimpleRestAnswer(HttpStatus.ACCEPTED, value.getLogin() + ":" + new String(value.getPassword())))
+                        value -> new SimpleRestAnswer(HttpStatus.ACCEPTED, "OK"))
                 .orElseGet(
                         () -> new SimpleRestAnswer(HttpStatus.UNAUTHORIZED, "Wrong password")
                 );
