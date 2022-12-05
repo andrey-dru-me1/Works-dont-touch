@@ -30,7 +30,7 @@ public class AuthorizationService {
             throw new AuthFormatException();
         }
         return switch (authData[0]) {
-            case "Base" -> Optional.ofNullable(baseAuthorization(authData[1]));
+            case "Basic" -> Optional.ofNullable(baseAuthorization(authData[1]));
             default -> throw new AuthFormatException();
         };
     }
@@ -53,7 +53,12 @@ public class AuthorizationService {
     }
 
     private User baseAuthorization(String base64) {
-        String data = new String(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8)));
+        String data;
+        try {
+            data = new String(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8)));
+        } catch (IllegalArgumentException e) {
+            throw new AuthFormatException();
+        }
         String[] pair = data.split(":", 2);
         if(pair.length != 2)
             throw new AuthFormatException();
