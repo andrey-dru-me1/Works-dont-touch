@@ -15,6 +15,8 @@ import ru.works.dont.touch.server.servicies.UserService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path = "/demo") // This means URL's start with /demo (after Application path)
@@ -86,10 +88,18 @@ public class MainController {
     public @ResponseBody HttpStatusCode image() {
         byte[] info = {1,2,3,125,5,125,5,4,5,6,2};
         try {
-            imageService.saveImage((Long) (long)25, new ByteArrayInputStream(info));
+            var img = imageService.saveImage((Long) (long)25);
+            imageService.saveImageInMemory(img, new ByteArrayInputStream(info));
+        } catch (NotExistsException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            return HttpStatusCode.valueOf(404);
+            throw new RuntimeException(e);
         }
         return HttpStatusCode.valueOf(200);
+    }
+    @GetMapping(path = "/imgs")
+    public @ResponseBody List<URI> images() {
+
+        return imageService.getUrisByCardId((long)25);
     }
 }

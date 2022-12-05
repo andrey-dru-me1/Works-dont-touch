@@ -19,3 +19,6 @@ GET https://localhost:8080/demo/del
 
 ###
 GET https://localhost:8080/demo/img
+
+###
+GET https://localhost:8080/demo/imgs
