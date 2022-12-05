@@ -1,18 +1,24 @@
-POST localhost:8080/demo/ad
+POST https://localhost:8080/demo/ad
 
 ###
-GET localhost:8080/demo/al
-
-
-###
-GET localhost:8080/demo/up
+GET https://localhost:8080/demo/al
 
 
 ###
-GET localhost:8080/demo/gbl
+GET https://localhost:8080/demo/up
+
 
 ###
-GET localhost:8080/demo/userlog
+GET https://localhost:8080/demo/gbl
 
 ###
-GET localhost:8080/demo/del
+GET https://localhost:8080/demo/userlog
+
+###
+GET https://localhost:8080/demo/del
+
+###
+GET https://localhost:8080/demo/img
+
+###
+GET https://localhost:8080/demo/imgs

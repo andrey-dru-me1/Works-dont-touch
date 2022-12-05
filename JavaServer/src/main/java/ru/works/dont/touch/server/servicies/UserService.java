@@ -7,16 +7,27 @@ import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.UserRepository;
 
+import java.util.WeakHashMap;
+
 @Service
 public class UserService {
+    private final WeakHashMap<String, User> loginCacheMap;
+    private final WeakHashMap<Long, User> idCacheMap;
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        loginCacheMap = new WeakHashMap<>();
+        idCacheMap = new WeakHashMap<>();
     }
 
     private final UserRepository userRepository;
+
     public User findUserByID(Long id) throws NotExistsException {
+        if (idCacheMap.containsKey(id)) {
+            return idCacheMap.get(id);
+        }
         var user = userRepository.findById(id);
-        if (user.isEmpty()){
+        if (user.isEmpty()) {
             throw new NotExistsException("User not exists with id: " + id);
         }
 
@@ -28,28 +39,38 @@ public class UserService {
     }
 
     public boolean userExist(User user) {
-        return userExist(user.getLogin(), user.getPassword());
+        return idCacheMap.containsKey(user.getId())
+                || userExist(user.getLogin(), user.getPassword());
     }
 
     public boolean userExist(String login, byte[] password) {
-        return userRepository.existsByLoginAndPassword(login, password);
+        return loginCacheMap.containsKey(login)
+                || userRepository.existsByLoginAndPassword(login, password);
     }
 
     public boolean userExistByLogin(String login) {
-        return userRepository.existsByLogin(login);
+        return loginCacheMap.containsKey(login)
+                || userRepository.existsByLogin(login);
     }
 
     @Transactional
     public User saveNewUser(User user) throws ExistsException {
-        if (userExist(user)) {
-            throw new ExistsException("User already exists: " + user);
+        if (userExistByLogin(user.getLogin())) {
+            throw new ExistsException("User already exists: " + user.getLogin());
         }
-        return userRepository.save(user);
+        var newUser = userRepository.save(user);
+        String login = new String(newUser.getLogin());
+        Long id = newUser.getId().longValue();
+        loginCacheMap.put(login, newUser);
+        idCacheMap.put(id, newUser);
+        login = null;
+        id = null;
+        return newUser;
     }
 
     @Transactional
     public User saveNewUser(String login, byte[] password) throws ExistsException {
-        if (userRepository.existsByLogin(login)) {
+        if (userExistByLogin(login)) {
             throw new ExistsException("User exists by this login: " + login);
         }
 
@@ -83,7 +104,10 @@ public class UserService {
             throw new NotExistsException("User by this login" +
                     "doesnt exist: " + login);
         }
-        return userRepository.findByLogin(login);
+        if (loginCacheMap.containsKey(login)) {
+            return loginCacheMap.get(login);
+        }
+        return userRepository.findByLogin(login).get();
     }
 
     public byte[] getPasswordByLogin(String login) throws NotExistsException {
