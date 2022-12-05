@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +40,8 @@ class MainActivity : ComponentActivity(), UpdateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        DataController.getInstance().putUserFromFile()
+
         DataController.getInstance().putCardsFromFile()
         cards.addAll(DataController.getInstance().cards)
 
@@ -58,8 +61,6 @@ class MainActivity : ComponentActivity(), UpdateListener {
                     color = MaterialTheme.colors.background
                 ) {
                     val list = remember { cards }
-//                    val img: MutableState<Uri?> = remember { image }
-//                    Image(painter = rememberImagePainter(data = img.value), contentDescription = "sth")
                     CardsGrid(list)
 
                     AddCardButton()

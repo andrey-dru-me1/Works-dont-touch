@@ -2,6 +2,9 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
 import androidx.annotation.NonNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +17,7 @@ import java.util.logging.Logger;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.ReplaceCardUpdate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update;
@@ -26,6 +30,8 @@ public class DataController {
     private final Logger logger = Logger.getLogger(DataController.class.getName());
 
     private final Collection<Card> cards = new ArrayList<>();
+
+    private User user;
 
     private final List<UpdateListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
@@ -59,6 +65,15 @@ public class DataController {
         onUpdate(new AddCardUpdate(card));
     }
 
+    public void putUserFromFile() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            user = mapper.readValue("/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/user.json", User.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void putCardsFromFile() {
         Collection<Card> cardList = CardsData.getCardsFromFile();
 
@@ -72,4 +87,7 @@ public class DataController {
         return cards;
     }
 
+    public User getUser() {
+        return user;
+    }
 }
