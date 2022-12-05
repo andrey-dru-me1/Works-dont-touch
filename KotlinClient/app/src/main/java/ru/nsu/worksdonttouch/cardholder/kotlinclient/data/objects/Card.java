@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public class Card {
 
     private String name;
@@ -36,7 +38,7 @@ public class Card {
     ) {
         this.name = name;
         this.barcode = barcode;
-        this.image = Uri.parse(image);
+        this.image = Uri.fromFile(new File(image));
     }
 
     public String getName() {
@@ -53,7 +55,7 @@ public class Card {
 
     @JsonGetter("image")
     public String getStringImage() {
-        return this.image.toString();
+        return this.image.getPath();
     }
 
     @Override
