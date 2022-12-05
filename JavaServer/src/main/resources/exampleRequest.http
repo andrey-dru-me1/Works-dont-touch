@@ -16,3 +16,6 @@ GET https://localhost:8080/demo/userlog
 
 ###
 GET https://localhost:8080/demo/del
+
+###
+GET https://localhost:8080/demo/img
