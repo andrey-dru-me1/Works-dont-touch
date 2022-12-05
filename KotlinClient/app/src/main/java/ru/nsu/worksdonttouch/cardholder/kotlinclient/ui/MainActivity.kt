@@ -48,7 +48,7 @@ import java.io.File
 
 class MainActivity : ComponentActivity(), UpdateListener {
 
-    private val cards: SnapshotStateList<MutableState<Card>> = mutableStateListOf()
+    private val cards: SnapshotStateList<Card> = mutableStateListOf()
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,12 +95,12 @@ class MainActivity : ComponentActivity(), UpdateListener {
     override fun update(update: Update) {
         if(update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
             cards.clear()
-            cards.addAll(DataController.getInstance().cards.map { mutableStateOf(it) })
+            cards.addAll(DataController.getInstance().cards)
         }
     }
 
     @Composable
-    fun CardsGrid(cards: SnapshotStateList<MutableState<Card>>) {
+    fun CardsGrid(cards: SnapshotStateList<Card>) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
         ) {
@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
 
     @OptIn(ExperimentalCoilApi::class)
     @Composable
-    fun CardView(card: MutableState<Card>) {
+    fun CardView(card: Card) {
 
         val mContext = LocalContext.current
 
@@ -123,16 +123,15 @@ class MainActivity : ComponentActivity(), UpdateListener {
             },
         )
         {
-            val sth = remember { card }
             Column {
                 Image(
-                    painter = rememberImagePainter(data = sth.value.image),
-                    contentDescription = sth.value.name,
+                    painter = rememberImagePainter(data = card.image),
+                    contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
                 )
-                Text(text = sth.value.name + "Text")
+                Text(text = "Shop " + card.name)
             }
         }
     }
