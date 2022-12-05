@@ -13,10 +13,10 @@ import ru.works.dont.touch.server.rest.v1_0.cards.exception.CardCreateException;
 import ru.works.dont.touch.server.rest.v1_0.cards.exception.UnknownCardException;
 import ru.works.dont.touch.server.rest.map.MapService;
 import ru.works.dont.touch.server.rest.v1_0.excepton.AlreadyExistsException;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.CardEditor;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.CardList;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.ReceivedCard;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.ReturnedCard;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardEditor;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardList;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.ReceivedCard;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.ReturnedCard;
 import ru.works.dont.touch.server.rest.v1_0.excepton.NoAuthorizationException;
 import ru.works.dont.touch.server.rest.v1_0.excepton.WrongDataException;
 import ru.works.dont.touch.server.servicies.CardService;
@@ -100,10 +100,10 @@ public class CardRestApi {
         ReturnedCard returnedCard = new ReturnedCard(card.getId(), card.getName(), card.getBarcode(), new ArrayList<>(), new ArrayList<>());
         Iterable<Location> locations = locationService.findAllByCardId(card.getId());
         for(Location loc : locations) {
-            var location = new ru.works.dont.touch.server.rest.v1_0.objects.loaction.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
+            var location = new ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
             Iterable<Coordinate> coordinates = coordinateService.findByLocationId(loc.getId());
             for(Coordinate coordinate : coordinates) {
-                location.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.objects.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
+                location.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
             }
             returnedCard.locations().add(location);
         }
@@ -184,15 +184,15 @@ public class CardRestApi {
         if (cardEditor.locations() != null) {
             locationService.deleteByCardId(card.getId());
             coordinateService.deleteByCardId(card.getId());
-            for (ru.works.dont.touch.server.rest.v1_0.objects.loaction.Location loc : cardEditor.locations()) {
+            for (ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location loc : cardEditor.locations()) {
                 try {
                     Location createdLocation = locationService.save(loc.isCustom(), loc.name(), card.getId());
                     if (createdLocation != null) {
-                        var returnedLocation = new ru.works.dont.touch.server.rest.v1_0.objects.loaction.Location(createdLocation.getName(), createdLocation.getCustom(), new ArrayList<>());
-                        for (ru.works.dont.touch.server.rest.v1_0.objects.coordinate.Coordinate coordinate : loc.coordinates()) {
+                        var returnedLocation = new ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location(createdLocation.getName(), createdLocation.getCustom(), new ArrayList<>());
+                        for (ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate coordinate : loc.coordinates()) {
                             Coordinate createdCoordinate = coordinateService.save(createdLocation.getId(), coordinate.latitude(), coordinate.longitude());
                             if (createdCoordinate != null)
-                                returnedLocation.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.objects.coordinate.Coordinate(createdCoordinate.getLatitude(), createdCoordinate.getLongitude()));
+                                returnedLocation.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate(createdCoordinate.getLatitude(), createdCoordinate.getLongitude()));
                         }
                         returnedCard.locations().add(returnedLocation);
                     }
@@ -203,10 +203,10 @@ public class CardRestApi {
         } else {
             Iterable<Location> locations = locationService.findAllByCardId(card.getId());
             for(Location loc : locations) {
-                var returnedLocation = new ru.works.dont.touch.server.rest.v1_0.objects.loaction.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
+                var returnedLocation = new ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
                 Iterable<Coordinate> coordinates = coordinateService.findByLocationId(loc.getId());
                 for(Coordinate coordinate : coordinates)
-                    returnedLocation.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.objects.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
+                    returnedLocation.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
                 returnedCard.locations().add(returnedLocation);
             }
         }

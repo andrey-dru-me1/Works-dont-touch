@@ -1,7 +1,7 @@
-package ru.works.dont.touch.server.rest.v1_0.objects.card;
+package ru.works.dont.touch.server.rest.v1_0.cards.object.card;
 
 import ru.works.dont.touch.server.entities.Card;
-import ru.works.dont.touch.server.rest.v1_0.objects.loaction.Location;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location;
 
 import java.util.ArrayList;
 import java.util.List;

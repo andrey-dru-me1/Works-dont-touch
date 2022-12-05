@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.entities.Coordinate;
 import ru.works.dont.touch.server.entities.Location;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.CardList;
-import ru.works.dont.touch.server.rest.v1_0.objects.card.CardWithDistance;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardList;
+import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardWithDistance;
 import ru.works.dont.touch.server.servicies.CoordinateService;
 import ru.works.dont.touch.server.servicies.LocationService;
 

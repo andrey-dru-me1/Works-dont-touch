@@ -1,8 +1,6 @@
 package ru.works.dont.touch.server.rest.v1_0.images;
 
-import org.apache.commons.logging.Log;
 import org.aspectj.util.FileUtil;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.Resource;
@@ -11,12 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.rest.v1_0.auth.AuthorizationService;
 import ru.works.dont.touch.server.rest.v1_0.excepton.IOServerException;
 import ru.works.dont.touch.server.rest.v1_0.excepton.NoAuthorizationException;
-import ru.works.dont.touch.server.rest.v1_0.objects.image.Image;
+import ru.works.dont.touch.server.rest.v1_0.images.object.image.Image;
 import ru.works.dont.touch.server.servicies.CardService;
 import ru.works.dont.touch.server.servicies.ImageService;
 
