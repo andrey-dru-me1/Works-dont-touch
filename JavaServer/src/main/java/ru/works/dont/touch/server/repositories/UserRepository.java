@@ -6,7 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 import ru.works.dont.touch.server.entities.User;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
 
 // This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
@@ -20,10 +19,11 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     boolean deleteByLogin(String login);
 
-    User findByLoginAndPassword(String login, byte[] password);
+    Optional<User> findByLoginAndPassword(String login, byte[] password);
+
     Optional<User> findById(Long id);
 
-    User findByLogin(String login);
+    Optional<User> findByLogin(String login);
 
     Iterable<User> findAll();
 
