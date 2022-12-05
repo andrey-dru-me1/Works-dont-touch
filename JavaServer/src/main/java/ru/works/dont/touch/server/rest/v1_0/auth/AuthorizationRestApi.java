@@ -19,8 +19,8 @@ public class AuthorizationRestApi {
     @PostMapping(path = "/registration",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public SimpleRestAnswer registration(
-            @RequestHeader(value = "login", required = true) String login,
-            @RequestHeader(value = "password", required = true) String password) {
+            @RequestHeader(value = "Login", required = true) String login,
+            @RequestHeader(value = "Password", required = true) String password) {
         if (authorizationService.registration(login, password)) {
             return SimpleRestAnswer.getOKAnswer();
         }
