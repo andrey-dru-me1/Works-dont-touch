@@ -2,13 +2,8 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects;
 
 import android.net.Uri;
 
-import androidx.annotation.NonNull;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.Serializable;
-import java.util.List;
 
 public class Card {
 
