@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -110,6 +112,8 @@ class MainActivity : ComponentActivity(), UpdateListener {
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
+                        .aspectRatio((86.0/54).toFloat())
+                        .clip(RoundedCornerShape(10.dp))
                 )
                 Text(text = "Shop " + card.name)
             }
