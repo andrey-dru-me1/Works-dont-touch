@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsSaveLoad;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.UserSaveLoad;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
@@ -26,7 +29,7 @@ public class DataController {
 
     private final Collection<Card> cards = new ArrayList<>();
 
-    private User user;
+    private User user = null;
 
     private final List<UpdateListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
@@ -61,12 +64,7 @@ public class DataController {
     }
 
     public void putUserFromFile() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            user = mapper.readValue("/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/user.json", User.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        user = UserSaveLoad.getUserFromFile();
     }
 
     public void putCardsFromFile() {
@@ -85,4 +83,10 @@ public class DataController {
     public User getUser() {
         return user;
     }
+
+    public void setUser(User user) {
+        this.user = user;
+        UserSaveLoad.saveUser(user);
+    }
+
 }

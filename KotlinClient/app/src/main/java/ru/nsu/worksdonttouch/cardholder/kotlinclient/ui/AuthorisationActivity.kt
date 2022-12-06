@@ -3,14 +3,18 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.ui.theme.KotlinClientTheme
+import kotlin.random.Random
 
 class AuthorisationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,22 +26,39 @@ class AuthorisationActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting2("Android")
+                    Column {
+                        var login by rememberSaveable { mutableStateOf("") }
+                        var password by rememberSaveable { mutableStateOf("") }
+                        TextField(
+                            value = login,
+                            label = { Text( "Login" ) },
+                            onValueChange = { login = it },
+                            singleLine = true
+                        )
+                        TextField(
+                            value = password,
+                            label = { Text( "Password" ) },
+                            onValueChange = { password = it },
+                            singleLine = true
+                        )
+                        Button(
+                            onClick = { onSaveButtonClick(login, password) }
+                        ) {
+                            Text("Save")
+                        }
+                    }
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting2(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview4() {
-    KotlinClientTheme {
-        Greeting2("Android")
+    private fun onSaveButtonClick(login: String, password: String) {
+        DataController.getInstance().user = User(
+            login = login,
+            password = password,
+            token = Random(System.currentTimeMillis()).toString()
+        )
+        finish()
     }
+
 }

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +42,9 @@ class MainActivity : ComponentActivity(), UpdateListener {
         super.onCreate(savedInstanceState)
 
         DataController.getInstance().putUserFromFile()
+        if(DataController.getInstance().user == null) {
+            startActivity(Intent(this, AuthorisationActivity::class.java))
+        }
 
         DataController.getInstance().putCardsFromFile()
         cards.addAll(DataController.getInstance().cards)

@@ -1,10 +1,8 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -18,15 +16,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.ImageSaver
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -65,7 +60,7 @@ class AddCardActivity : ComponentActivity() {
         TextField(
             value = text,
             modifier = Modifier.focusRequester(focusRequester),
-            placeholder = { Text("Shop name") },
+            label = { Text("Shop name") },
             onValueChange = {
                 text = it
                 this.cardName = it
@@ -81,7 +76,7 @@ class AddCardActivity : ComponentActivity() {
         var text by rememberSaveable { mutableStateOf("") }
         TextField(
             value = text,
-            placeholder = { Text("Barcode") },
+            label = { Text("Barcode") },
             onValueChange = {
                 text = it
                 this.barCode = it
