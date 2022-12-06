@@ -1,9 +1,12 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +20,12 @@ public class Card {
 
     private String barcode;
 
-    private Uri image;
+    private Bitmap image;
 
-    public Card(@NotNull String name, @Nullable String barcode, Uri image) {
+    @JsonIgnore
+    private String path;
+
+    public Card(@NotNull String name, @Nullable String barcode, Bitmap image) {
         this.name = name;
         this.barcode = barcode;
         this.image = image;
@@ -34,11 +40,12 @@ public class Card {
             @Nullable
                     String barcode,
             @JsonProperty("image")
-                    String image
+                    String imagePath
     ) {
         this.name = name;
         this.barcode = barcode;
-        this.image = Uri.fromFile(new File(image));
+        this.path = imagePath;
+        this.image = BitmapFactory.decodeFile(imagePath);
     }
 
     public String getName() {
@@ -49,13 +56,13 @@ public class Card {
         return barcode;
     }
 
-    public Uri getImage() {
+    public Bitmap getImage() {
         return image;
     }
 
     @JsonGetter("image")
     public String getStringImage() {
-        return this.image.getPath();
+        return this.path;
     }
 
     @Override

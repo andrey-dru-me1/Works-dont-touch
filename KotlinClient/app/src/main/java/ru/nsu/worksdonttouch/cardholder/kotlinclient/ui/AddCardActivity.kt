@@ -1,7 +1,6 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -116,7 +115,7 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun SaveButton(bitmap: Bitmap?) {
         Button(onClick = {
-            val path: String = "/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/${cardName}"
+            val path = "/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/${cardName}"
             val file = File(path)
             try {
                 Files.createDirectory(Paths.get("/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/"))
@@ -128,9 +127,8 @@ class AddCardActivity : ComponentActivity() {
             bitmap?.compress(Bitmap.CompressFormat.JPEG,100,stream)
             stream.flush()
             stream.close()
-            val uri: Uri = Uri.fromFile(file)
 
-            DataController.getInstance().putCard(Card(cardName, barCode, uri))
+            DataController.getInstance().putCard(Card(cardName, barCode, bitmap))
             finish()
         }) {
             Text("OK")
