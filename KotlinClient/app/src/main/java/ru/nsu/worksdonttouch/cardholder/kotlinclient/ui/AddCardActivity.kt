@@ -18,8 +18,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.ImageSaver
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.ByteArrayOutputStream
@@ -109,15 +111,7 @@ class AddCardActivity : ComponentActivity() {
             catch (_: Throwable) { }
             file.createNewFile()
 
-            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, image)
-            val bos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos)
-            val bitmapdata = bos.toByteArray()
-
-            val fos = FileOutputStream(file)
-            fos.write(bitmapdata)
-            fos.flush()
-            fos.close()
+            if(image != null) ImageSaver.saveToFile(this, image!!, file)
 
             DataController.getInstance().putCard(Card(cardName, barCode, Uri.fromFile(file)))
             finish()
