@@ -22,13 +22,14 @@ public class Card {
 
     private Bitmap image;
 
-    @JsonIgnore
     private String path;
 
-    public Card(@NotNull String name, @Nullable String barcode, Bitmap image) {
+    public Card(@NotNull String name, @Nullable String barcode, Bitmap image, String path) {
         this.name = name;
         this.barcode = barcode;
         this.image = image;
+        this.path = path;
+
     }
 
     @JsonCreator
@@ -61,7 +62,7 @@ public class Card {
     }
 
     @JsonGetter("image")
-    public String getStringImage() {
+    public String getImagePath() {
         return this.path;
     }
 

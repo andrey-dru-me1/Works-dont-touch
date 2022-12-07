@@ -128,7 +128,7 @@ class AddCardActivity : ComponentActivity() {
             stream.flush()
             stream.close()
 
-            DataController.getInstance().putCard(Card(cardName, barCode, bitmap))
+            DataController.getInstance().putCard(Card(cardName, barCode, bitmap, path))
             finish()
         }) {
             Text("OK")
