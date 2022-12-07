@@ -26,6 +26,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
@@ -85,10 +87,21 @@ class MainActivity : ComponentActivity(), UpdateListener {
 
     @Composable
     fun CardsGrid(cards: SnapshotStateList<Card>) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+        var isRefreshing by remember { mutableStateOf(false) }
+        val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = {
+                isRefreshing = true
+                //TODO: Try connecting to a server and synchronize all the data
+                isRefreshing = false
+            }
         ) {
-            cards.map { item { CardView(it) } }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+            ) {
+                cards.map { item { CardView(it) } }
+            }
         }
     }
 
@@ -115,7 +128,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
-                        .aspectRatio((86.0/54).toFloat())
+                        .aspectRatio((86.0 / 54).toFloat())
                         .clip(RoundedCornerShape(10.dp))
                 )
                 Text(text = "Shop " + card.name)
