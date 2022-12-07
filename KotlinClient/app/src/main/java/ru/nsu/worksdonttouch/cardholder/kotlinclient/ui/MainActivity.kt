@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -15,19 +16,24 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.pullRefreshIndicatorTransform
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
@@ -85,22 +91,50 @@ class MainActivity : ComponentActivity(), UpdateListener {
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun CardsGrid(cards: SnapshotStateList<Card>) {
-        var isRefreshing by remember { mutableStateOf(false) }
-        val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
-        SwipeRefresh(
-            state = swipeRefreshState,
-            onRefresh = {
-                isRefreshing = true
-                //TODO: Try connecting to a server and synchronize all the data
-                isRefreshing = false
-            }
-        ) {
+        val refreshScope = rememberCoroutineScope()
+        var refreshing by remember { mutableStateOf(false) }
+
+        fun refresh() = refreshScope.launch {
+            refreshing = true
+            //TODO: Try connecting to a server and synchronize all the data
+            delay(1500)
+            refreshing = false
+        }
+
+        val state = rememberPullRefreshState(refreshing, ::refresh)
+        val rotation = animateFloatAsState(state.progress * 120)
+
+        Box( Modifier.pullRefresh(state) ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
             ) {
-                cards.map { item { CardView(it) } }
+                cards.map {  item { CardView(it) } }
+            }
+
+            Surface(
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.TopCenter)
+                    .pullRefreshIndicatorTransform(state)
+                    .rotate(rotation.value),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.DarkGray,
+                elevation = if (state.progress > 0 || refreshing) 20.dp else 0.dp,
+            ) {
+                Box {
+                    if (refreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(25.dp),
+                            color = Color.White,
+                            strokeWidth = 3.dp
+                        )
+                    }
+                }
             }
         }
     }
