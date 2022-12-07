@@ -73,7 +73,7 @@ class AuthorisationActivity : ComponentActivity() {
             password = password,
             token = Random(System.currentTimeMillis()).toString()
         )
-        finish()
+        startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
     }
 
 }

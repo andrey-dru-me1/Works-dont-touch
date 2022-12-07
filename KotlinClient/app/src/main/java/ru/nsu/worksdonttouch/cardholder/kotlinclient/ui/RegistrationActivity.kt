@@ -73,7 +73,7 @@ class RegistrationActivity : ComponentActivity() {
             password = password,
             token = Random(System.currentTimeMillis()).toString()
         )
-        finish()
+        startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
     }
 
 }
