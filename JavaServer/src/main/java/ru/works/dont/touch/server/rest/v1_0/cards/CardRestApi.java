@@ -170,7 +170,11 @@ public class CardRestApi {
             Iterable<Image> images = imageService.findAllImageByCardId(card.getId());
             for (Image image : images) {
                 if (!cardEditor.images().contains(image.getId())) {
-                    imageService.deleteById(image.getId());
+                    try {
+                        imageService.deleteById(image.getId());
+                    } catch (NotExistsException e) {
+                        logger.warn("Strange behavior", e);
+                    }
                 } else {
                     returnedCard.images().add(image.getId());
                 }
