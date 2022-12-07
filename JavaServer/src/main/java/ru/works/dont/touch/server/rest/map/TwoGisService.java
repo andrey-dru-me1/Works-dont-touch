@@ -36,6 +36,7 @@ public class TwoGisService implements MapService {
             }
             LoggerFactory.getLogger(TwoGisService.class).info("distance "+ card.getName() + ":"+distance);
         }
+
         return list;
     }
 

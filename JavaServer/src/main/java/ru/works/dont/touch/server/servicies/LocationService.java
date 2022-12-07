@@ -1,6 +1,7 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Location;
 import ru.works.dont.touch.server.exceptions.ExistsException;
@@ -11,7 +12,9 @@ import java.util.Optional;
 
 @Service
 public class LocationService {
-    private LocationRepository locationRepository;
+    private final LocationRepository locationRepository;
+    @Autowired
+    private CoordinateService coordinateService;
 
     public LocationService(LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
@@ -41,11 +44,14 @@ public class LocationService {
     @Transactional
     public void deleteById(Long id) {
         locationRepository.deleteAllById(id);
+        coordinateService.deleteByLocationId(id);
     }
+
 
     @Transactional
     public void deleteByCardId(Long cardId) {
         locationRepository.deleteAllByCardId(cardId);
+        coordinateService.deleteByCardId(cardId);
     }
 
     @Transactional

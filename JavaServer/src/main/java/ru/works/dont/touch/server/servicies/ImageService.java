@@ -54,18 +54,20 @@ public class ImageService {
      * @param cardId the id of card
      */
     @Transactional
-    public Iterable<Image> deleteByCardId(Long cardId) throws NotExistsException {
+    public Iterable<Image> deleteByCardId(Long cardId) throws NotExistsException{
         if (!imageRepository.existsByCardId(cardId)){
             throw new NotExistsException("Image with cardId not exist, id: "+cardId);
         }
-        var imgs = imageRepository.findByCardId(cardId);
-        imageRepository.deleteAllByCardId(cardId);
+        var imgs = imageRepository.findAllByCardId(cardId);
+        File dir = getDirectory(cardId);
         for (Image img : imgs) {
-            var fileImg = getImageFile(img);
-            if (fileImg.exists()){
-                fileImg.delete();
-            }
+            try {
+                deleteById(img.getId());
+            } catch (NotExistsException ignore) {}
         }
+        System.out.println(dir);
+        dir.delete();
+        imageRepository.deleteAllByCardId(cardId);
         return imgs;
     }
 
