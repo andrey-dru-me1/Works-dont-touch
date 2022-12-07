@@ -1,6 +1,7 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.exceptions.ExistsException;
@@ -9,7 +10,12 @@ import ru.works.dont.touch.server.repositories.CardRepository;
 
 @Service
 public class CardService {
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
+
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private LocationService locationService;
 
     public CardService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
@@ -32,6 +38,30 @@ public class CardService {
 
     public Iterable<Card> findAll() {
         return cardRepository.findAll();
+    }
+
+
+    public Card deleteById(Long id) throws NotExistsException {
+        var card = getCardById(id);
+
+        try {
+            imageService.deleteByCardId(id);
+        } catch (NotExistsException ignore) {}
+        locationService.deleteByCardId(card.getId());
+        cardRepository.deleteAllById(id);
+        return card;
+
+    }
+    public Iterable<Card> deleteByOwnerId(Long id){
+        var cards = getCardsByUserId(id);
+
+        for (Card card : cards) {
+            try {
+                deleteById(card.getId());
+            } catch (NotExistsException ignore) {}
+        }
+
+        return cards;
     }
 
     @Transactional

@@ -17,7 +17,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     boolean existsByLoginAndPassword(String login, byte[] password);
 
-    boolean deleteByLogin(String login);
+    void deleteByLogin(String login);
+    void deleteById(Long id);
 
     Optional<User> findByLoginAndPassword(String login, byte[] password);
 
