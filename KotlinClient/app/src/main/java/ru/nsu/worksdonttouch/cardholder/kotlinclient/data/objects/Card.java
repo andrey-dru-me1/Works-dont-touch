@@ -61,7 +61,7 @@ public class Card implements Parcelable {
         path = in.readString();
     }
 
-    public static final Creator<Card> CREATOR = new Creator<Card>() {
+    public static final Creator<Card> CREATOR = new Creator() {
         @Override
         public Card createFromParcel(Parcel in) {
             return new Card(in);
@@ -90,6 +90,7 @@ public class Card implements Parcelable {
         return this.path;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Card{" +
@@ -109,6 +110,22 @@ public class Card implements Parcelable {
         dest.writeString(this.name);
         dest.writeString(this.barcode);
         dest.writeParcelable(this.image, 0);
-        dest.writeString(this.barcode);
+        dest.writeString(this.path);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public void setImage(Bitmap image) {
+        this.image = image;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 }

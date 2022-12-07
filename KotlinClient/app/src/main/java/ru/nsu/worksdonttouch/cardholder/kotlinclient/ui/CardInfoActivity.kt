@@ -1,5 +1,6 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -75,7 +76,11 @@ class CardInfoActivity : ComponentActivity() {
                             modifier = Modifier
                                 .padding(15.dp)
                                 .size(60.dp),
-                            onClick = { /*TODO*/ }
+                            onClick = {
+                                val intent = Intent(this@CardInfoActivity, EditCardActivity::class.java)
+                                intent.putExtra("card", card)
+                                startActivity(intent)
+                            }
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.pen),

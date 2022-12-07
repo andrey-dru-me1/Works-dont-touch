@@ -43,7 +43,9 @@ class MainActivity : ComponentActivity(), UpdateListener {
 
         DataController.getInstance().putUserFromFile()
         if(DataController.getInstance().user == null) {
-            startActivity(Intent(this, AuthorisationActivity::class.java))
+            val intent = Intent(this, AuthorisationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
 
         DataController.getInstance().putCardsFromFile()

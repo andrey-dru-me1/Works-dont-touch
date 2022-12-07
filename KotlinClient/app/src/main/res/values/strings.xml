@@ -3,4 +3,6 @@
     <string name="title_activity_card_info">CardInfoActivity</string>
     <string name="title_activity_add_card">AddCardActivity</string>
     <string name="title_activity_authorisation">AuthorisationActivity</string>
+    <string name="title_activity_edit_card">EditCardActivity</string>
+    <string name="title_activity_registration">RegistrationActivity</string>
 </resources>

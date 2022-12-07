@@ -1,5 +1,7 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,7 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +31,7 @@ public class DataController {
 
     private final Logger logger = Logger.getLogger(DataController.class.getName());
 
-    private final Collection<Card> cards = new ArrayList<>();
+    private final Set<Card> cards = new HashSet<>();
 
     private User user = null;
 
@@ -60,6 +64,14 @@ public class DataController {
     public void putCard(Card card) {
         cards.add(card);
         logger.log(Level.INFO, "new card: " + card);
+        onUpdate(new AddCardUpdate(card));
+    }
+
+    public void editCard(Card card, String name, String barcode, Bitmap bitmap, String path) {
+        card.setName(name);
+        card.setBarcode(barcode);
+        card.setImage(bitmap);
+        card.setPath(path);
         onUpdate(new AddCardUpdate(card));
     }
 

@@ -3,6 +3,7 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -20,7 +21,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
@@ -28,14 +28,15 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.lang.reflect.InvocationTargetException
 import java.nio.file.Files
 import java.nio.file.Paths
 
 
-class AddCardActivity : ComponentActivity() {
+class EditCardActivity : ComponentActivity() {
 
-    var cardName: String = ""
-    var barCode: String = ""
+    var cardName: String? = ""
+    var barcode: String? = ""
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,8 +48,20 @@ class AddCardActivity : ComponentActivity() {
                     modifier = Modifier.wrapContentSize(),
                     color = MaterialTheme.colors.background
                 ) {
+
+                    val card: Card? =  intent.getParcelableExtra<Card>("card")
+                    cardName = card?.name
+                    barcode = card?.barcode
+
+                    try {
+                        Files.delete(Paths.get(card?.imagePath))
+                    } catch(e: InvocationTargetException) {
+                        Log.d("INFO", "$e")
+                    }
+
+
                     Column {
-                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }
+                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(card?.image) }
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()
                         )
@@ -62,7 +75,7 @@ class AddCardActivity : ComponentActivity() {
                             onClick = { launcher.launch(null) },
                             content = { Text("Take a photo") }
                         )
-                        SaveButton(bitmap.value)
+                        SaveButton(bitmap.value, card)
                         bitmap.value?.asImageBitmap()?.let {
                             Image(
                                 bitmap = it,
@@ -83,9 +96,9 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun CardNameEdit() {
         val focusRequester = remember { FocusRequester() }
-        var text by rememberSaveable { mutableStateOf("") }
+        var text by rememberSaveable { mutableStateOf(cardName) }
         TextField(
-            value = text,
+            value = text ?: "",
             modifier = Modifier.focusRequester(focusRequester),
             label = { Text("Shop name") },
             onValueChange = {
@@ -100,20 +113,20 @@ class AddCardActivity : ComponentActivity() {
 
     @Composable
     fun BarCodeEdit() {
-        var text by rememberSaveable { mutableStateOf("") }
+        var text by rememberSaveable { mutableStateOf(barcode) }
         TextField(
-            value = text,
+            value = text ?: "",
             label = { Text("Barcode") },
             onValueChange = {
                 text = it
-                this.barCode = it
+                this.barcode = it
             }
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun SaveButton(bitmap: Bitmap?) {
+    fun SaveButton(bitmap: Bitmap?, card: Card?) {
         Button(onClick = {
             val path = "/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/${cardName}"
             val file = File(path)
@@ -128,19 +141,12 @@ class AddCardActivity : ComponentActivity() {
             stream.flush()
             stream.close()
 
-            DataController.getInstance().putCard(Card(cardName, barCode, bitmap, path))
+            DataController.getInstance().editCard(card, cardName, this.barcode, bitmap, path)
+
             finish()
         }) {
             Text("OK")
         }
     }
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview3() {
-    KotlinClientTheme {
-        Text("Android")
-    }
 }
