@@ -8,22 +8,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
@@ -38,6 +40,11 @@ class MainActivity : ComponentActivity(), UpdateListener {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DataController.getInstance().putUserFromFile()
+        if(DataController.getInstance().user == null) {
+            startActivity(Intent(this, AuthorisationActivity::class.java))
+        }
 
         DataController.getInstance().putCardsFromFile()
         cards.addAll(DataController.getInstance().cards)
@@ -58,8 +65,6 @@ class MainActivity : ComponentActivity(), UpdateListener {
                     color = MaterialTheme.colors.background
                 ) {
                     val list = remember { cards }
-//                    val img: MutableState<Uri?> = remember { image }
-//                    Image(painter = rememberImagePainter(data = img.value), contentDescription = "sth")
                     CardsGrid(list)
 
                     AddCardButton()
@@ -95,20 +100,21 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 .fillMaxSize()
                 .padding(10.dp, 5.dp),
             onClick = {
-                mContext.startActivity(Intent(mContext, CardInfoActivity::class.java))
+                val intent = Intent(mContext, CardInfoActivity::class.java)
+                intent.putExtra("card", card)
+                mContext.startActivity(intent)
             },
         )
         {
             Column {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(card.image)
-                        .crossfade(true)
-                        .build(),
+                Image(
+                    bitmap = card.image.asImageBitmap(),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
+                        .aspectRatio((86.0/54).toFloat())
+                        .clip(RoundedCornerShape(10.dp))
                 )
                 Text(text = "Shop " + card.name)
             }

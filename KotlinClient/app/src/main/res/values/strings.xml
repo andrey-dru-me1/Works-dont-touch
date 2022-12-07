@@ -2,4 +2,5 @@
     <string name="app_name">KotlinClient</string>
     <string name="title_activity_card_info">CardInfoActivity</string>
     <string name="title_activity_add_card">AddCardActivity</string>
+    <string name="title_activity_authorisation">AuthorisationActivity</string>
 </resources>
