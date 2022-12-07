@@ -2,22 +2,24 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
 import androidx.annotation.NonNull;
 
-import java.lang.reflect.Array;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsSaveLoad;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.UserSaveLoad;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.ReplaceCardUpdate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.UpdateType;
 
 public class DataController {
 
@@ -26,6 +28,8 @@ public class DataController {
     private final Logger logger = Logger.getLogger(DataController.class.getName());
 
     private final Collection<Card> cards = new ArrayList<>();
+
+    private User user = null;
 
     private final List<UpdateListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
@@ -39,7 +43,7 @@ public class DataController {
     }
 
     private void onUpdate(Update update) {
-        CardsData.saveCards(this.getCards());
+        CardsSaveLoad.saveCards(this.getCards());
         for(UpdateListener listener : listeners) {
             listener.update(update);
         }
@@ -59,8 +63,12 @@ public class DataController {
         onUpdate(new AddCardUpdate(card));
     }
 
+    public void putUserFromFile() {
+        user = UserSaveLoad.getUserFromFile();
+    }
+
     public void putCardsFromFile() {
-        Collection<Card> cardList = CardsData.getCardsFromFile();
+        Collection<Card> cardList = CardsSaveLoad.getCardsFromFile();
 
         if(cardList == null) return;
 
@@ -70,6 +78,15 @@ public class DataController {
 
     public Collection<Card> getCards() {
         return cards;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        UserSaveLoad.saveUser(user);
     }
 
 }
