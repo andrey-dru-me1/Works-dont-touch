@@ -3,6 +3,10 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -13,8 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class Card {
+public class Card implements Parcelable {
 
     private String name;
 
@@ -49,6 +54,25 @@ public class Card {
         this.image = BitmapFactory.decodeFile(imagePath);
     }
 
+    protected Card(Parcel in) {
+        name = in.readString();
+        barcode = in.readString();
+        image = in.readParcelable(Bitmap.class.getClassLoader());
+        path = in.readString();
+    }
+
+    public static final Creator<Card> CREATOR = new Creator<Card>() {
+        @Override
+        public Card createFromParcel(Parcel in) {
+            return new Card(in);
+        }
+
+        @Override
+        public Card[] newArray(int size) {
+            return new Card[size];
+        }
+    };
+
     public String getName() {
         return name;
     }
@@ -73,5 +97,18 @@ public class Card {
                 ", barcode='" + barcode + '\'' +
                 ", image=" + image +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(this.name);
+        dest.writeString(this.barcode);
+        dest.writeParcelable(this.image, 0);
+        dest.writeString(this.barcode);
     }
 }

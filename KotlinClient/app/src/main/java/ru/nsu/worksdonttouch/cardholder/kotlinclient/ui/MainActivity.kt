@@ -100,7 +100,9 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 .fillMaxSize()
                 .padding(10.dp, 5.dp),
             onClick = {
-                mContext.startActivity(Intent(mContext, CardInfoActivity::class.java))
+                val intent = Intent(mContext, CardInfoActivity::class.java)
+                intent.putExtra("card", card)
+                mContext.startActivity(intent)
             },
         )
         {
