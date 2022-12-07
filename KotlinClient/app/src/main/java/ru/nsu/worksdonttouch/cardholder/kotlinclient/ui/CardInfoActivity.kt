@@ -21,8 +21,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.oned.Code128Writer
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
+
 
 class CardInfoActivity : ComponentActivity() {
 
@@ -37,18 +42,27 @@ class CardInfoActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val card: Card = intent.getParcelableExtra<Card>("card")!!
+                    val card: Card = intent.getParcelableExtra("card")!!
                     Column {
-                        Text(fontSize = 50.sp, text = card.name)
-                        Text(text = card.barcode)
                         Image(
                             bitmap = card.image.asImageBitmap(),
                             contentDescription = "Card preview",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
-                                .aspectRatio((86.0/54).toFloat())
+                                .aspectRatio((86.0 / 54).toFloat())
                                 .clip(RoundedCornerShape(10.dp))
                         )
+                        Text(fontSize = 50.sp, text = card.name)
+                        Text(text = card.barcode)
+
+                        val text: String = card.barcode
+
+                        val writer = Code128Writer()
+                        val matrix: BitMatrix = writer.encode(text, BarcodeFormat.CODE_128, 500, 300)
+
+                        val bitmap = BitMatrixConverter.bitMatrixToBitmap(matrix)
+
+                        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Barcode")
                     }
                 }
             }

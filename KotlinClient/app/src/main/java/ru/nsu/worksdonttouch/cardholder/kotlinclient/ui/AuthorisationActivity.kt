@@ -44,7 +44,7 @@ class AuthorisationActivity : ComponentActivity() {
                         Button(
                             onClick = { onSaveButtonClick(login, password) }
                         ) {
-                            Text("Save")
+                            Text("Log in")
                         }
                     }
                 }
