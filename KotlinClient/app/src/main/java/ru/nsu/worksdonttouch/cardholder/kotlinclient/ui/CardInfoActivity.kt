@@ -59,6 +59,7 @@ class CardInfoActivity : ComponentActivity() {
                     val card: Card = intent.getParcelableExtra("card")!!
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
+                    var selectedLocation: Int? = null
 
                     Column {
 
@@ -101,6 +102,7 @@ class CardInfoActivity : ComponentActivity() {
                                 text = AnnotatedString("Sample location"),
                                 style = TextStyle(color = Color.Blue),
                                 onClick = {
+                                    selectedLocation = 0
                                     openDialog.value = true
                                 }
                             )
@@ -128,24 +130,29 @@ class CardInfoActivity : ComponentActivity() {
                     }
 
                     if(openDialog.value) {
-                        Box(
-                            modifier = Modifier
-                                .padding(35.dp, 80.dp)
-                                .clip(RoundedCornerShape(50.dp))
-                                .fillMaxSize()
-                                .background(Color.White)
-                                .border(
-                                    width = 2.dp,
-                                    color = Color.LightGray,
-                                    shape = RoundedCornerShape(50.dp)
-                                )
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color.Black.copy(alpha = 0.6f)
                         ) {
-                            Popup(
-                                alignment = Alignment.Center,
-                                properties = PopupProperties(),
-                                onDismissRequest = { openDialog.value = false },
+                            Box(
+                                modifier = Modifier
+                                    .padding(35.dp, 80.dp)
+                                    .clip(RoundedCornerShape(50.dp))
+                                    .fillMaxSize()
+                                    .background(Color.White)
+                                    .border(
+                                        width = 2.dp,
+                                        color = Color.LightGray,
+                                        shape = RoundedCornerShape(50.dp)
+                                    )
                             ) {
+                                Popup(
+                                    alignment = Alignment.Center,
+                                    properties = PopupProperties(),
+                                    onDismissRequest = { openDialog.value = false },
+                                ) {
                                     Text(text = "Location", fontSize = 50.sp)
+                                }
                             }
                         }
                     }
@@ -153,6 +160,11 @@ class CardInfoActivity : ComponentActivity() {
             }
         }
     }
+
+}
+
+@Composable
+fun EditLocation(locationId: Int) {
 
 }
 

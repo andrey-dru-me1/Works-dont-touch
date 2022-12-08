@@ -113,6 +113,8 @@ class MainActivity : ComponentActivity(), UpdateListener {
             Modifier
                 .fillMaxSize()
                 .pullRefresh(state) ) {
+
+            //Grid of cards
             LazyVerticalGrid (
                 modifier = Modifier
                     .fillMaxSize()
@@ -122,6 +124,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 cards.map {  item { CardView(it) } }
             }
 
+            //Spinning round
             Surface(
                 modifier = Modifier
                     .size(40.dp)
