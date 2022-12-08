@@ -63,6 +63,28 @@ public class ApiRequests extends ApiWorker {
             callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
+    @Override
+    public void getCardList(HttpCallback<CardList> callback) {
+        HttpUrl url = Configuration.basicBuilder().addPathSegments("cards/getList")
+                .build();
+        Request request = new Request.Builder()
+                .addHeader("Authorization", authorizationString(user))
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
+                return;
+            }
+            CardList cardList = objectMapper.readValue(response.body().string(), CardList.class);
+            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, cardList);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
+        }
+    }
 
     @Override
     public void getCardList(double latitude, double longitude, HttpCallback<CardList> callback) {
@@ -271,6 +293,7 @@ public class ApiRequests extends ApiWorker {
             callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
+
 
     @Override
     public void deleteCard(Card card, HttpCallback<Card> callback) {
