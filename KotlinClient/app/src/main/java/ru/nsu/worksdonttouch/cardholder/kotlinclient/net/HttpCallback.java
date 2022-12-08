@@ -2,6 +2,8 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.net;
 
 import okhttp3.Response;
 
+import java.io.IOException;
+
 public interface HttpCallback<T> {
 
     public void answer(HttpResult result, T data);
@@ -27,6 +29,9 @@ public interface HttpCallback<T> {
             }
             if (response.code() == 403) {
                 return NO_PERMISSION;
+            }
+            if (response.code() == 200) {
+                return SUCCESSFUL;
             }
             if (response.body() == null) {
                 return FAIL;

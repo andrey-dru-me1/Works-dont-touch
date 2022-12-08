@@ -7,8 +7,8 @@ public class Configuration {
     private Configuration() {}
 
     public static String scheme = "http";
-    public static String host = "localhost";
-    public static Integer port = 8080;
+    public static String host = "sidey383.online";
+    public static Integer port = null;
     public static String basicPathSegment = "v1.0";
 
     public static HttpUrl.Builder basicBuilder() {
