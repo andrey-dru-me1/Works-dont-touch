@@ -45,7 +45,6 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.File
-import javax.security.auth.callback.Callback
 
 
 class CardInfoActivity : ComponentActivity() {
@@ -148,8 +147,8 @@ class CardInfoActivity : ComponentActivity() {
                         }
                     }
 
-                    if(openDialog.value) {
-                        EditCoordinatesFragment(location = selectedLocation) {
+                    if(openDialog.value && selectedLocation != null) {
+                        EditCoordinatesFragment(location = selectedLocation!!) {
                             openDialog.value = false
                         }
                     }
@@ -159,7 +158,7 @@ class CardInfoActivity : ComponentActivity() {
     }
 
     @Composable
-    fun EditCoordinatesFragment(location: Location?, close: () -> Unit) {
+    fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Black.copy(alpha = 0.6f)
@@ -181,16 +180,23 @@ class CardInfoActivity : ComponentActivity() {
                     properties = PopupProperties(),
                     onDismissRequest = { close.apply {  } },
                 ) {
-                    Text(text = "Location", fontSize = 50.sp)
+                    Text(text = location.name, fontSize = 50.sp)
+
+                    Row {
+                        Text(text = "Latitude")
+                        Text(text = "Longitude")
+                    }
+
+                    location.coordinates.map {
+                        Row {
+                            Text(text = it.latitude.toString())
+                            Text(text = it.longitude.toString())
+                        }
+                    }
                 }
             }
         }
     }
-
-}
-
-@Composable
-fun EditLocation(locationId: Int) {
 
 }
 
