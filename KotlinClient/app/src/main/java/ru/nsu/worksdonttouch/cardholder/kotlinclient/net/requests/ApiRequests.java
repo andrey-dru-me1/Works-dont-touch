@@ -17,7 +17,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@SuppressWarnings({"unused"})
 public class ApiRequests extends ApiWorker {
     protected UserData user;
 

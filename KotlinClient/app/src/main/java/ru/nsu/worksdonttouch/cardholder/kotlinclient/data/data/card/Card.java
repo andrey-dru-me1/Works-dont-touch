@@ -11,13 +11,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Coordinate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location;
 
 public class Card implements Parcelable {
@@ -125,9 +124,9 @@ public class Card implements Parcelable {
         this.barcode = barcode;
     }
 
-//    public Card clone() {
-//        return new Card(id, name, barcode, new ArrayList<>(images), locations.stream().map(Location::clone).collect(Collectors.toList()));
-//    }
+    public Card clone() {
+        return new Card(id, name, barcode, new ArrayList<>(images), locations.stream().map(Location::clone).collect(Collectors.toList()));
+    }
 
     @Override
     public int describeContents() {

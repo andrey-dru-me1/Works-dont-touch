@@ -1,37 +1,46 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Location {
 
-    private double latitude;
-    private double longitude;
+    private String name;
+    private boolean isCustom;
+    private List<Coordinate> coordinates;
 
-    @JsonCreator
-    public Location(@JsonProperty("latitude") double latitude, @JsonProperty("longitude") double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public Location(String name, boolean isCustom,  List<Coordinate> coordinates) {
+        this.name = name;
+        this.isCustom = isCustom;
+        this.coordinates = coordinates;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public String getName() {
+        return name;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public boolean isCustom() {
+        return isCustom;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public List<Coordinate> getCoordinates() {
+        return coordinates;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCustom(boolean custom) {
+        isCustom = custom;
+    }
+
+    public void setCoordinates(List<Coordinate> coordinates) {
+        this.coordinates = coordinates;
     }
 
     public Location clone() {
-        return new Location(latitude, longitude);
+        return new Location(name, isCustom, coordinates.stream().map(Coordinate::clone).collect(Collectors.toList()));
     }
-
 }

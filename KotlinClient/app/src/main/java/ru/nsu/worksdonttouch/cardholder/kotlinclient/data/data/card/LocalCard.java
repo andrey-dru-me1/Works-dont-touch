@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Coordinate;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location;
 
 public class LocalCard extends Card {
@@ -38,8 +38,8 @@ public class LocalCard extends Card {
             @NotNull String name,
             @Nullable String barcode,
             @NotNull List<Long> images,
-            @NotNull List<Location> locations) {
-        super(null, name, barcode, images, locations);
+            @NotNull List<Location> coordinates) {
+        super(null, name, barcode, images, coordinates);
         this.localID = null;
     }
 

@@ -15,6 +15,7 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +43,7 @@ public class DataController {
         dataFileContainer = new DataFileContainer(dir);
     }
 
-    public static synchronized void init(File dir) throws IOException{
+    public static synchronized void init(File dir) throws IOException {
         instance = new DataController(dir);
     }
 
@@ -85,46 +86,53 @@ public class DataController {
         apiWorker = null;
     }
 
-    private boolean isOffline() {
+    public boolean isOffline() {
         return isOffline;
     }
 
-    public void createCard(String name, String barcode, DataCallBack<Card> callBack) throws Exception {
+    public void createCard(String name, String barcode, DataCallBack<Card> callBack) {
         Card card = new Card(name, barcode, null, null);
         if (apiWorker != null) {
-            apiWorker.addCard(card, (result, data) -> {
-                switch (result) {
-                    case FAIL:
-                        try {
-                            Card finalCard = dataFileContainer.save(card);
-                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, finalCard);
-                            runEvent(new CardAddEvent(finalCard));
-                        } catch (Exception e) {
-                            logger.log(Level.WARNING, "card save error", e);
+            try {
+                apiWorker.addCard(card, (result, data) -> {
+                    switch (result) {
+                        case FAIL:
+                            try {
+                                Card finalCard = dataFileContainer.save(card);
+                                runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, finalCard);
+                                runEvent(new CardAddEvent(finalCard));
+                            } catch (Exception e) {
+                                logger.log(Level.WARNING, "card save error", e);
+                                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                            }
+                            break;
+                        case NO_PERMISSION:
+                        case NOT_FOUND:
                             runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
-                        }
-                        break;
-                    case NO_PERMISSION:
-                    case NOT_FOUND:
-                        runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
-                        break;
-                    case AUTHORIZATION_ERROR:
-                        runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, null);
-                        runEvent(new LogOutEvent(apiWorker.getUserData()));
-                    case SUCCESSFUL:
-                        try {
-                            Card finalCard = dataFileContainer.save(data);
-                            runCallback(callBack, DataCallBack.DataStatus.OK, finalCard);
-                            runEvent(new CardAddEvent(finalCard));
-                        } catch (Exception e) {
-                            logger.log(Level.WARNING, "card save error", e);
-                            runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
-                        }
-                        pushUpdates();
-                }
-            });
+                            break;
+                        case AUTHORIZATION_ERROR:
+                            runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, null);
+                            runEvent(new LogOutEvent(apiWorker.getUserData()));
+                            break;
+                        case SUCCESSFUL:
+                            try {
+                                Card finalCard = dataFileContainer.save(data);
+                                runCallback(callBack, DataCallBack.DataStatus.OK, finalCard);
+                                runEvent(new CardAddEvent(finalCard));
+                            } catch (Exception e) {
+                                logger.log(Level.WARNING, "card save error", e);
+                                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                            }
+                            pushUpdates();
+                            break;
+                    }
+                });
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "request error", e);
+                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+            }
         } else {
-            if  (isOffline) {
+            if (isOffline) {
                 try {
                     Card finalCard = dataFileContainer.save(card);
                     runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, finalCard);
@@ -177,15 +185,26 @@ public class DataController {
                                 runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
                             }
                             pushUpdates();
+                            break;
+                        case NO_CONNECTION:
+                            isOffline = true;
+                            try {
+                                Card finalCard = dataFileContainer.save(card);
+                                runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, finalCard);
+                                runEvent(new CardChangeEvent(finalCard));
+                            } catch (Exception e) {
+                                logger.log(Level.WARNING, "card edit error", e);
+                                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                            }
+                            break;
                     }
                 });
             } catch (Exception e) {
                 logger.log(Level.WARNING, "request error", e);
-
                 runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
             }
         } else {
-            if  (isOffline) {
+            if (isOffline) {
                 try {
                     Card finalCard = dataFileContainer.save(card);
                     runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, finalCard);
@@ -201,18 +220,37 @@ public class DataController {
         }
     }
 
-    public void deleteCard(Card card, DataCallBack<Card> callBack) throws Exception {
+    public void deleteCard(Card card, DataCallBack<Card> callBack) {
+    }
 
+    public void getImage(Card card, long id, DataCallBack<File> callBack) {
+    }
+
+    public void addImage(Card card, InputStream inputStream, DataCallBack<File> callBack) {
+    }
+
+    public void getCards(DataCallBack<Card[]> callBack) {
+    }
+
+    public void getCards(DataCallBack<Card[]> callBack, double latitude, double longitude) {
     }
 
     public void pushUpdates() {
         //TODO: реализовать
     }
 
+    public ApiWorker getApiWorker() {
+        return apiWorker;
+    }
+
+    public DataFileContainer getDataFileContainer() {
+        return dataFileContainer;
+    }
+
     public static void registerListener(@NotNull EventListener eventListener) {
         Class<?> clazz = eventListener.getClass();
         while (!clazz.isPrimitive()) {
-            for(Method m : clazz.getMethods()) {
+            for (Method m : clazz.getMethods()) {
                 if (m.isAnnotationPresent(EventHandler.class) && m.getParameterTypes().length == 1 && Event.class.isAssignableFrom(m.getParameterTypes()[0])) {
                     Class<? extends Event> type = (Class<? extends Event>) m.getParameterTypes()[0];
                     if (listenerMap.get(type) == null)
@@ -229,8 +267,8 @@ public class DataController {
         });
     }
 
-    private static void runEvent(@NotNull Event event) {
-        for(ListenerEventRunner runner : listenerMap.get(event.getClass())) {
+    public static void runEvent(@NotNull Event event) {
+        for (ListenerEventRunner runner : listenerMap.get(event.getClass())) {
             try {
                 runner.run(event);
             } catch (Exception e) {
@@ -242,7 +280,7 @@ public class DataController {
     private static <T> void runCallback(DataCallBack<T> callBack, DataCallBack.DataStatus status, T type) {
         try {
             callBack.callback(status, type);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             logger.log(Level.WARNING, "Callback error", e);
         }
     }
