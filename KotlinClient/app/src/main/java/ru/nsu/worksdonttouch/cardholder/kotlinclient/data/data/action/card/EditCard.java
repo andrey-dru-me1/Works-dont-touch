@@ -1,5 +1,8 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card;
 
+import java.io.IOException;
+import java.util.logging.Level;
+
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.DataAction;
@@ -18,27 +21,45 @@ public class EditCard extends DataAction<Card, Card, Card> {
 
     @Override
     protected void offlineRun(Card object) {
-
+        try {
+            dataFileContainer.save(object);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Card edit IOException ", e);
+            runCallback(DataCallBack.DataStatus.CANCELED, null);
+        }
     }
 
     @Override
     protected void onSuccessful(Card object) {
-
+        try {
+            dataFileContainer.save(object);
+            runCallback(DataCallBack.DataStatus.OK, null);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Card edit IOException ", e);
+            runCallback(DataCallBack.DataStatus.CANCELED, null);
+        }
     }
 
     @Override
     protected void onFail(Card object) {
-
+        dataFileContainer.addCardToUpdate(object);
+        runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, null);
     }
 
     @Override
     protected void onNoPermission(Card object) {
-
+        runCallback(DataCallBack.DataStatus.CANCELED, null);
     }
 
     @Override
     protected void onNotFound(Card object) {
-
+        try {
+            dataFileContainer.save(object);
+            runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, null);.
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Card edit IOException ", e);
+            runCallback(DataCallBack.DataStatus.CANCELED, null);
+        }
     }
 
     @Override

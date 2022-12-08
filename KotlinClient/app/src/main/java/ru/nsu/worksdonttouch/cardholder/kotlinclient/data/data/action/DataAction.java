@@ -57,7 +57,7 @@ public abstract class DataAction<T, R, K> {
     protected abstract void onWrongRequest(K object);
 
     protected void onAuthorizationError(K object) {
-        runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, null);
+        runCallback(DataCallBack.DataStatus.WRONG_USER, null);
         DataController.runEvent(new LogOutEvent(apiWorker.getUserData()));
     }
 
@@ -92,7 +92,7 @@ public abstract class DataAction<T, R, K> {
         }
     }
 
-    protected static <T> void runCallback(DataCallBack<T> callBack, DataCallBack.DataStatus status, T type) {
+    protected void runCallback(DataCallBack.DataStatus status, T type) {
         try {
             callBack.callback(status, type);
         } catch (Exception e) {
