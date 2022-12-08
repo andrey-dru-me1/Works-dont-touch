@@ -20,19 +20,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.ByteArrayOutputStream
 
 
-class AddCardActivity : ComponentActivity() {
+class EditCardActivity : ComponentActivity() {
 
-    private var cardName: String = ""
-    private var barCode: String = ""
+    private var cardName: String? = ""
+    private var barcode: String? = ""
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,8 +41,15 @@ class AddCardActivity : ComponentActivity() {
                     modifier = Modifier.wrapContentSize(),
                     color = MaterialTheme.colors.background
                 ) {
+
+                    val card: Card? =  intent.getParcelableExtra<Card>("card")
+                    cardName = card?.name
+                    barcode = card?.barcode
+
+                    //TODO: delete file
+
                     Column {
-                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }
+                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf() }   //get current image
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()
                         )
@@ -59,7 +63,7 @@ class AddCardActivity : ComponentActivity() {
                             onClick = { launcher.launch(null) },
                             content = { Text("Take a photo") }
                         )
-                        SaveButton(bitmap.value)
+                        SaveButton(bitmap.value, card)
                         bitmap.value?.asImageBitmap()?.let {
                             Image(
                                 bitmap = it,
@@ -80,9 +84,9 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun CardNameEdit() {
         val focusRequester = remember { FocusRequester() }
-        var text by rememberSaveable { mutableStateOf("") }
+        var text by rememberSaveable { mutableStateOf(cardName) }
         TextField(
-            value = text,
+            value = text ?: "",
             modifier = Modifier.focusRequester(focusRequester),
             label = { Text("Shop name") },
             onValueChange = {
@@ -97,40 +101,33 @@ class AddCardActivity : ComponentActivity() {
 
     @Composable
     fun BarCodeEdit() {
-        var text by rememberSaveable { mutableStateOf("") }
+        var text by rememberSaveable { mutableStateOf(barcode) }
         TextField(
-            value = text,
+            value = text ?: "",
             label = { Text("Barcode") },
             onValueChange = {
                 text = it
-                this.barCode = it
+                this.barcode = it
             }
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun SaveButton(bitmap: Bitmap?) {
+    fun SaveButton(bitmap: Bitmap?, card: Card?) {
         Button(onClick = {
 
             val stream = ByteArrayOutputStream()
             bitmap?.compress(Bitmap.CompressFormat.PNG,0,stream)
-            //TODO: create new image
+            //TODO: rewrite image
 
-            //TODO: add the card globally
-//            DataController.getInstance().putCard(Card(cardName, barCode, bitmap, path))
+            //TODO: edit card globally
+//            DataController.getInstance().editCard(card, cardName, this.barcode, bitmap, path)
+
             finish()
         }) {
             Text("OK")
         }
     }
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview3() {
-    KotlinClientTheme {
-        Text("Android")
-    }
 }

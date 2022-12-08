@@ -17,6 +17,24 @@
         android:theme="@style/Theme.KotlinClient"
         tools:targetApi="31">
         <activity
+            android:name=".ui.RegistrationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_registration"
+            android:theme="@style/Theme.KotlinClient">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".ui.EditCardActivity"
+            android:exported="false"
+            android:label="@string/title_activity_edit_card"
+            android:theme="@style/Theme.KotlinClient">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".ui.AuthorisationActivity"
             android:exported="false"
             android:label="@string/title_activity_authorisation"
