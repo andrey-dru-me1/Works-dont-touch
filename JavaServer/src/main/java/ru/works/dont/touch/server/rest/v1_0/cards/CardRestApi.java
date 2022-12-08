@@ -114,6 +114,29 @@ public class CardRestApi {
         return returnedCard;
     }
 
+    @RequestMapping(path = "/delete",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            method = RequestMethod.POST)
+    public ReturnedCard deleteCard(
+            @RequestHeader(value = "Authorization", required = true) String authorization,
+            @RequestParam(value = "id", required = true) long cardId) {
+        Optional<User> optionalUser = authorizationService.authorization(authorization);
+        if(optionalUser.isEmpty()) {
+            throw new NoAuthorizationException();
+        }
+        User user = optionalUser.get();
+        Card card;
+        try {
+            card = cardService.getCardById(cardId);
+            if (card == null || !Objects.equals(card.getOwnerId(), user.getId()))
+                throw new UnknownCardException();
+            cardService.deleteById(card.getId());
+        } catch (NotExistsException e) {
+            throw new UnknownCardException();
+        }
+        return new ReturnedCard(card.getId(), card.getName(), card.getBarcode(), new ArrayList<>(), new ArrayList<>());
+    }
+
     @RequestMapping(path = "/add",
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
