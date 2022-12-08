@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.*;
 import ru.works.dont.touch.server.entities.*;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.rest.map.TwoGisService;
 import ru.works.dont.touch.server.rest.v1_0.auth.AuthorizationService;
 import ru.works.dont.touch.server.rest.v1_0.cards.exception.CardCreateException;
 import ru.works.dont.touch.server.rest.v1_0.cards.exception.UnknownCardException;
-import ru.works.dont.touch.server.rest.map.MapService;
-import ru.works.dont.touch.server.rest.v1_0.excepton.AlreadyExistsException;
 import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardEditor;
 import ru.works.dont.touch.server.rest.v1_0.cards.object.card.CardList;
 import ru.works.dont.touch.server.rest.v1_0.cards.object.card.ReceivedCard;
 import ru.works.dont.touch.server.rest.v1_0.cards.object.card.ReturnedCard;
+import ru.works.dont.touch.server.rest.v1_0.excepton.AlreadyExistsException;
 import ru.works.dont.touch.server.rest.v1_0.excepton.NoAuthorizationException;
 import ru.works.dont.touch.server.rest.v1_0.excepton.WrongDataException;
 import ru.works.dont.touch.server.servicies.CardService;
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path="/v1.0/cards")
+@RequestMapping(path = "/v1.0/cards")
 public class CardRestApi {
 
     private final Logger logger = LoggerFactory.getLogger(CardRestApi.class);
@@ -51,7 +51,7 @@ public class CardRestApi {
     private CoordinateService coordinateService;
 
     @Autowired
-    private MapService mapService;
+    private TwoGisService mapService;
 
     @RequestMapping(path = "/getList",
             produces = MediaType.APPLICATION_JSON_VALUE,
@@ -61,17 +61,17 @@ public class CardRestApi {
             @RequestParam(value = "latitude", required = false) Double latitude,
             @RequestParam(value = "longitude", required = false) Double longitude) {
         Optional<User> optionalUser = authorizationService.authorization(authorization);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoAuthorizationException();
         }
         User user = optionalUser.get();
         Iterable<Card> cards = cardService.getCardsByUserId(user.getId());
-        logger.info(mapService + "," + latitude + ","+longitude);
+        logger.info(mapService + "," + latitude + "," + longitude);
         if (mapService != null && latitude != null && longitude != null) {
             return mapService.sortCards(cards, latitude, longitude);
         } else {
             List<Long> ids = new ArrayList<>();
-            for(Card card : cards) {
+            for (Card card : cards) {
                 ids.add(card.getId());
             }
             return new CardList(List.of(), ids);
@@ -85,7 +85,7 @@ public class CardRestApi {
             @RequestHeader(value = "Authorization", required = true) String authorization,
             @RequestParam(value = "id", required = true) long cardId) {
         Optional<User> optionalUser = authorizationService.authorization(authorization);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoAuthorizationException();
         }
         User user = optionalUser.get();
@@ -99,16 +99,16 @@ public class CardRestApi {
         }
         ReturnedCard returnedCard = new ReturnedCard(card.getId(), card.getName(), card.getBarcode(), new ArrayList<>(), new ArrayList<>());
         Iterable<Location> locations = locationService.findAllByCardId(card.getId());
-        for(Location loc : locations) {
+        for (Location loc : locations) {
             var location = new ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
             Iterable<Coordinate> coordinates = coordinateService.findByLocationId(loc.getId());
-            for(Coordinate coordinate : coordinates) {
+            for (Coordinate coordinate : coordinates) {
                 location.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
             }
             returnedCard.locations().add(location);
         }
         Iterable<Image> images = imageService.findAllByCardId(card.getId());
-        for(Image image : images) {
+        for (Image image : images) {
             returnedCard.images().add(image.getId());
         }
         return returnedCard;
@@ -120,11 +120,11 @@ public class CardRestApi {
             method = {RequestMethod.POST})
     public ReturnedCard addCards(
             @RequestHeader(value = "Authorization", required = true) String authorization,
-            @RequestBody(required = true) ReceivedCard receivedCard){
-        if(receivedCard.name() == null)
+            @RequestBody(required = true) ReceivedCard receivedCard) {
+        if (receivedCard.name() == null)
             throw new WrongDataException();
         Optional<User> optionalUser = authorizationService.authorization(authorization);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoAuthorizationException();
         }
         User user = optionalUser.get();
@@ -134,7 +134,7 @@ public class CardRestApi {
         } catch (ExistsException e) {
             throw new AlreadyExistsException();
         }
-        if(card == null)
+        if (card == null)
             throw new CardCreateException();
         return new ReturnedCard(card.getId(), card.getName(), card.getBarcode(), List.of(), List.of());
     }
@@ -145,11 +145,11 @@ public class CardRestApi {
             method = {RequestMethod.POST})
     public ReturnedCard editCards(
             @RequestHeader(value = "Authorization", required = true) String authorization,
-            @RequestBody(required = true) CardEditor cardEditor)  {
-        if(cardEditor.id() == null)
+            @RequestBody(required = true) CardEditor cardEditor) {
+        if (cardEditor.id() == null)
             throw new WrongDataException();
         Optional<User> optionalUser = authorizationService.authorization(authorization);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoAuthorizationException();
         }
         User user = optionalUser.get();
@@ -206,17 +206,16 @@ public class CardRestApi {
             }
         } else {
             Iterable<Location> locations = locationService.findAllByCardId(card.getId());
-            for(Location loc : locations) {
+            for (Location loc : locations) {
                 var returnedLocation = new ru.works.dont.touch.server.rest.v1_0.cards.object.location.Location(loc.getName(), loc.getCustom(), new ArrayList<>());
                 Iterable<Coordinate> coordinates = coordinateService.findByLocationId(loc.getId());
-                for(Coordinate coordinate : coordinates)
+                for (Coordinate coordinate : coordinates)
                     returnedLocation.coordinates().add(new ru.works.dont.touch.server.rest.v1_0.cards.object.coordinate.Coordinate(coordinate.getLatitude(), coordinate.getLongitude()));
                 returnedCard.locations().add(returnedLocation);
             }
         }
         return returnedCard;
     }
-
 
 
 }
