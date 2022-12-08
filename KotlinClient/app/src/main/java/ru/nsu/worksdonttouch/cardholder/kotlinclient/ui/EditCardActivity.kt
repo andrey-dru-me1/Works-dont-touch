@@ -3,7 +3,6 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -22,21 +21,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
-import java.lang.reflect.InvocationTargetException
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.ByteArrayOutputStream
 
 
 class EditCardActivity : ComponentActivity() {
 
-    var cardName: String? = ""
-    var barcode: String? = ""
+    private var cardName: String? = ""
+    private var barcode: String? = ""
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,15 +46,10 @@ class EditCardActivity : ComponentActivity() {
                     cardName = card?.name
                     barcode = card?.barcode
 
-                    try {
-                        Files.delete(Paths.get(card?.imagePath))
-                    } catch(e: InvocationTargetException) {
-                        Log.d("INFO", "$e")
-                    }
-
+                    //TODO: delete file
 
                     Column {
-                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(card?.image) }
+                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }   //get current image
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()
                         )
@@ -128,20 +116,13 @@ class EditCardActivity : ComponentActivity() {
     @Composable
     fun SaveButton(bitmap: Bitmap?, card: Card?) {
         Button(onClick = {
-            val path = "/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/${cardName}"
-            val file = File(path)
-            try {
-                Files.createDirectory(Paths.get("/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/"))
-            }
-            catch (_: Throwable) { }
-            file.createNewFile()
 
-            val stream: OutputStream = FileOutputStream(file)
-            bitmap?.compress(Bitmap.CompressFormat.JPEG,100,stream)
-            stream.flush()
-            stream.close()
+            val stream = ByteArrayOutputStream()
+            bitmap?.compress(Bitmap.CompressFormat.PNG,0,stream)
+            //TODO: rewrite image
 
-            DataController.getInstance().editCard(card, cardName, this.barcode, bitmap, path)
+            //TODO: edit card globally
+//            DataController.getInstance().editCard(card, cardName, this.barcode, bitmap, path)
 
             finish()
         }) {

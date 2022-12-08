@@ -17,10 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.ui.theme.KotlinClientTheme
-import kotlin.random.Random
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class RegistrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,11 +65,7 @@ class RegistrationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        DataController.getInstance().user = User(
-            login = login,
-            password = password,
-            token = Random(System.currentTimeMillis()).toString()
-        )
+        //TODO: register new user
         startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
     }
 

@@ -39,22 +39,22 @@ public class DataController {
         apiWorker = ApiWorker.register(user);
     }
 
-    public void createCard(Card card, DataCallBack<Card> callBack) throws IllegalStateException, Exception {
-        if (apiWorker == null)
-            throw new IllegalStateException("Not authorized");
-        apiWorker.addCard(card, (result, data) -> {
-            switch (result) {
-                case FAIL:
-
-                case NO_PERMISSION:
-                    callBack.callback(DataCallBack.DataStatus.CANCELED, null);
-                    break;
-                case AUTHORIZATION_ERROR:
-                    callBack.callback(DataCallBack.DataStatus.WRONG_USER, null);
-                    case
-            }
-        });
-    }
+//    public void createCard(Card card, DataCallBack<Card> callBack) throws IllegalStateException, Exception {
+//        if (apiWorker == null)
+//            throw new IllegalStateException("Not authorized");
+//        apiWorker.addCard(card, (result, data) -> {
+//            switch (result) {
+//                case FAIL:
+//
+//                case NO_PERMISSION:
+//                    callBack.callback(DataCallBack.DataStatus.CANCELED, null);
+//                    break;
+//                case AUTHORIZATION_ERROR:
+//                    callBack.callback(DataCallBack.DataStatus.WRONG_USER, null);
+//                    case
+//            }
+//        });
+//    }
 
     public void pushUpdates() {
         //TODO: реализовать

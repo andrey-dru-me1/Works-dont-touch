@@ -34,12 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import coil.compose.rememberAsyncImagePainter
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.BitMatrixConverter
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 
@@ -65,7 +66,7 @@ class CardInfoActivity : ComponentActivity() {
 
                         //Main card image (face side)
                         Image(
-                            bitmap = card.image.asImageBitmap(),
+                            painter = rememberAsyncImagePainter(model = card.images[0]),
                             contentDescription = "Card preview",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
@@ -75,21 +76,21 @@ class CardInfoActivity : ComponentActivity() {
 
                         Text(fontSize = 50.sp, text = card.name)
 
-                        val text: String = card.barcode
+                        val barcodeString: String = card.barcode ?: ""
 
                         val writer = Code128Writer()
-                        val matrix: BitMatrix = writer.encode(text, BarcodeFormat.CODE_128, 500, 150)
+                        val matrix: BitMatrix = writer.encode(barcodeString, BarcodeFormat.CODE_128, 500, 150)
 
                         val bitmap = BitMatrixConverter.bitMatrixToBitmap(matrix)
 
-                        Image(
+                        Image (
                             bitmap = bitmap.asImageBitmap(),
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier.fillMaxWidth(),
                             contentDescription = "Barcode"
                         )
 
-                        Text(text = card.barcode, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text(text = barcodeString, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
 
                         //Other images of the card
                         Column {

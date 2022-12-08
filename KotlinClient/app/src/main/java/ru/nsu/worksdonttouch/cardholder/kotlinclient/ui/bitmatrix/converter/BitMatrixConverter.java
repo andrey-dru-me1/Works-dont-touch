@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter;
 
 import android.graphics.Bitmap;
 

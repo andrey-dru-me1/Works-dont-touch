@@ -22,20 +22,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.ByteArrayOutputStream
 
 
 class AddCardActivity : ComponentActivity() {
 
-    var cardName: String = ""
-    var barCode: String = ""
+    private var cardName: String = ""
+    private var barCode: String = ""
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,20 +109,13 @@ class AddCardActivity : ComponentActivity() {
     @Composable
     fun SaveButton(bitmap: Bitmap?) {
         Button(onClick = {
-            val path = "/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/${cardName}"
-            val file = File(path)
-            try {
-                Files.createDirectory(Paths.get("/data/data/ru.nsu.worksdonttouch.cardholder.kotlinclient/files/images/"))
-            }
-            catch (_: Throwable) { }
-            file.createNewFile()
 
-            val stream: OutputStream = FileOutputStream(file)
-            bitmap?.compress(Bitmap.CompressFormat.JPEG,100,stream)
-            stream.flush()
-            stream.close()
+            val stream = ByteArrayOutputStream()
+            bitmap?.compress(Bitmap.CompressFormat.PNG,0,stream)
+            //TODO: create new image
 
-            DataController.getInstance().putCard(Card(cardName, barCode, bitmap, path))
+            //TODO: add the card globally
+//            DataController.getInstance().putCard(Card(cardName, barCode, bitmap, path))
             finish()
         }) {
             Text("OK")

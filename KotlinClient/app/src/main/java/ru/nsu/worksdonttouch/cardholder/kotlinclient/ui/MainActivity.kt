@@ -27,23 +27,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.UpdateType
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import java.util.*
 
-class MainActivity : ComponentActivity(), UpdateListener {
+class MainActivity : ComponentActivity()/*, UpdateListener*/ {
 
     private val cards: SnapshotStateList<Card> = mutableStateListOf()
 
@@ -51,15 +48,14 @@ class MainActivity : ComponentActivity(), UpdateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        DataController.getInstance().putUserFromFile()
-        if(DataController.getInstance().user == null) {
-            val intent = Intent(this, AuthorisationActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-        }
+        //TODO: check user authorisation
+//        {
+//            val intent = Intent(this, AuthorisationActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//            startActivity(intent)
+//        }
 
-        DataController.getInstance().putCardsFromFile()
-        cards.addAll(DataController.getInstance().cards)
+        //TODO: Get all the cards
 
         val requestPermissionLauncher =
             registerForActivityResult(
@@ -67,7 +63,6 @@ class MainActivity : ComponentActivity(), UpdateListener {
             ){}
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        requestPermissionLauncher.launch(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
 
         setContent {
             KotlinClientTheme {
@@ -83,15 +78,16 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 }
             }
         }
-        DataController.getInstance().addListener(this)
+        //TODO: add listener
+//        DataController.getInstance().addListener(this)
     }
 
-    override fun update(update: Update) {
-        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
-            cards.clear()
-            cards.addAll(DataController.getInstance().cards)
-        }
-    }
+//    override fun update(update: Update) {
+//        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
+//            cards.clear()
+//            cards.addAll(DataController.getInstance().cards)
+//        }
+//    }
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -112,7 +108,8 @@ class MainActivity : ComponentActivity(), UpdateListener {
         Box(
             Modifier
                 .fillMaxSize()
-                .pullRefresh(state) ) {
+                .pullRefresh(state)
+        ) {
 
             //Grid of cards
             LazyVerticalGrid (
@@ -168,7 +165,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
         {
             Box {
                 Image(
-                    bitmap = card.image.asImageBitmap(),
+                    painter = rememberAsyncImagePainter(model = card.images[0]),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
