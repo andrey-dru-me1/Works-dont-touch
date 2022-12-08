@@ -41,6 +41,7 @@ public class CardService {
     }
 
 
+    @Transactional
     public Card deleteById(Long id) throws NotExistsException {
         var card = getCardById(id);
 
@@ -52,6 +53,7 @@ public class CardService {
         return card;
 
     }
+    @Transactional
     public Iterable<Card> deleteByOwnerId(Long id){
         var cards = getCardsByUserId(id);
 
