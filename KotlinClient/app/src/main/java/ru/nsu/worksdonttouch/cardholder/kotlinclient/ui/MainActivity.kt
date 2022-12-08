@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity()/*, UpdateListener*/ {
         {
             Box {
                 Image(
-                    painter = rememberAsyncImagePainter(model = card.images[0]),
+                    painter = rememberAsyncImagePainter(model = ),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier

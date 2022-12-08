@@ -49,7 +49,7 @@ class EditCardActivity : ComponentActivity() {
                     //TODO: delete file
 
                     Column {
-                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }   //get current image
+                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf() }   //get current image
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()
                         )

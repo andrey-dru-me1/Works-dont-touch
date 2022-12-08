@@ -22,6 +22,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.ByteArrayOutputStream
 

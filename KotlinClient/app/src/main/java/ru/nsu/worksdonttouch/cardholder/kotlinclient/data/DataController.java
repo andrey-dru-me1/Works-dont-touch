@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener;
