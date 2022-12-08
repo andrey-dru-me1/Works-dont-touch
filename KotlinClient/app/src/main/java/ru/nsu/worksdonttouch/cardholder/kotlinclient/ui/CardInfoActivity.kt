@@ -13,12 +13,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +41,12 @@ import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Coordinate
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.File
+import java.util.*
 
 
 class CardInfoActivity : ComponentActivity() {
@@ -82,39 +84,39 @@ class CardInfoActivity : ComponentActivity() {
                         val barcodeString: String = card.barcode ?: ""
 
                         val writer = Code128Writer()
-                        val matrix: BitMatrix = writer.encode(barcodeString, BarcodeFormat.CODE_128, 500, 150)
+                        val matrix: BitMatrix =
+                            writer.encode(barcodeString, BarcodeFormat.CODE_128, 500, 150)
 
                         val bitmap = BitMatrixConverter.bitMatrixToBitmap(matrix)
 
-                        Image (
+                        Image(
                             bitmap = bitmap.asImageBitmap(),
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier.fillMaxWidth(),
                             contentDescription = "Barcode"
                         )
 
-                        Text(text = barcodeString, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text(
+                            text = barcodeString,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
 
                         //Other images of the card
                         Column {
                             card.images.map {
                                 var image: File? = null
-                                DataController.getInstance().getImage(card, it) { _, file -> image = file}
-                                Image(painter = rememberAsyncImagePainter(model = image), contentDescription = card.name)
+                                DataController.getInstance()
+                                    .getImage(card, it) { _, file -> image = file }
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = image),
+                                    contentDescription = card.name
+                                )
                             }
                         }
 
                         Text("Locations:")
                         Column {
-                            //TODO: remove sample location
-                            ClickableText(
-                                text = AnnotatedString("Sample location"),
-                                style = TextStyle(color = Color.Blue),
-                                onClick = {
-                                    selectedLocation = null
-                                    openDialog.value = true
-                                }
-                            )
                             card.locations.map {
                                 ClickableText(
                                     text = AnnotatedString(it.name),
@@ -128,14 +130,15 @@ class CardInfoActivity : ComponentActivity() {
                         }
 
                     }
-                    Box( contentAlignment = Alignment.BottomEnd ) {
+                    Box(contentAlignment = Alignment.BottomEnd) {
                         Button(
                             shape = CircleShape,
                             modifier = Modifier
                                 .padding(15.dp)
                                 .size(60.dp),
                             onClick = {
-                                val intent = Intent(this@CardInfoActivity, EditCardActivity::class.java)
+                                val intent =
+                                    Intent(this@CardInfoActivity, EditCardActivity::class.java)
                                 intent.putExtra("card", card)
                                 startActivity(intent)
                             }
@@ -147,7 +150,7 @@ class CardInfoActivity : ComponentActivity() {
                         }
                     }
 
-                    if(openDialog.value && selectedLocation != null) {
+                    if (openDialog.value && selectedLocation != null) {
                         EditCoordinatesFragment(location = selectedLocation!!) {
                             openDialog.value = false
                         }
@@ -157,75 +160,137 @@ class CardInfoActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color.Black.copy(alpha = 0.6f)
+}
+
+@Composable
+fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
+    val localLocation = location.clone()
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f))
+            .padding(35.dp, 80.dp)
+    ) {
+        Popup(
+            properties = PopupProperties(focusable = true),
+            alignment = Alignment.Center,
+            onDismissRequest = { close() }
         ) {
             Box(
                 modifier = Modifier
-                    .padding(35.dp, 80.dp)
+                    .size(maxWidth, maxHeight)
                     .clip(RoundedCornerShape(50.dp))
-                    .fillMaxSize()
                     .background(Color.White)
-                    .border(
-                        width = 2.dp,
-                        color = Color.LightGray,
-                        shape = RoundedCornerShape(50.dp)
-                    )
             ) {
-                Popup(
-                    alignment = Alignment.Center,
-                    properties = PopupProperties(),
-                    onDismissRequest = { close.apply {  } },
-                ) {
-                    Text(text = location.name, fontSize = 50.sp)
+
+                val latitude = remember { mutableStateOf("") }
+                val longitude = remember { mutableStateOf("") }
+
+                val coors: SnapshotStateList<Coordinate?> =
+                    remember {
+                        val res = mutableStateListOf<Coordinate?>()
+                        res.addAll(localLocation.coordinates)
+                        res
+                    }
+
+                Column {
+
+                    Text(text = localLocation.name, fontSize = 50.sp)
 
                     Row {
-                        Text(text = "Latitude")
-                        Text(text = "Longitude")
-                    }
+                        Column(Modifier.wrapContentSize()) {
+                            Text(text = "Latitude")
+                            coors.map {
+                                Text(text = it?.latitude.toString())
+                            }
+                            CoordinateField(latitude)
+                        }
 
-                    location.coordinates.map {
-                        Row {
-                            Text(text = it.latitude.toString())
-                            Text(text = it.longitude.toString())
+                        Spacer(modifier = Modifier.padding(6.dp))
+
+                        Column(Modifier.wrapContentSize()) {
+                            Text(text = "Longitude")
+                            coors.map {
+                                Text(text = it?.longitude.toString())
+                            }
+                            CoordinateField(longitude)
                         }
                     }
+                }
+
+                Button(
+                    onClick = {
+                        coors.add(
+                            Coordinate(
+                                latitude.value.toDouble(),
+                                longitude.value.toDouble()
+                            )
+                        )
+                        longitude.value = ""
+                        latitude.value = ""
+                        localLocation.coordinates = coors
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(30.dp, 20.dp)
+                        .clip(CircleShape)
+                ) {
+                    Text("Add")
+                }
+
+                Button(
+                    onClick = {
+                        location.coordinates = localLocation.coordinates
+                        close()
+                    }, modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(30.dp, 20.dp)
+                        .clip(CircleShape)
+                ) {
+                    Text("Apply")
                 }
             }
         }
     }
+}
 
+@Composable
+fun CoordinateField(text: MutableState<String>) {
+    BasicTextField(
+        value = text.value,
+        onValueChange = { text.value = it },
+        singleLine = true,
+        modifier = Modifier
+            .border(
+                2.dp,
+                Color.LightGray,
+                RoundedCornerShape(5.dp)
+            )
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview2() {
     KotlinClientTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
-        ) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue)) {
-                val expandState = remember {
-                    mutableStateOf(true)
-                }
-                Popup(
-                    alignment = Alignment.Center,
-                    properties = PopupProperties(),
-                    onDismissRequest = { expandState.value = false }
-                ) {
-                    Button(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(50.dp), onClick = { }) {
-                        Text("Lol")
-                    }
-                }
-            }
+        val location = remember {
+            mutableStateOf(
+                Location(
+                    "Быстроном",
+                    true,
+                    listOf(Coordinate(15.0, 20.0))
+                )
+            )
+        }
+        val flag = remember { mutableStateOf(true) }
+        if (flag.value) {
+            EditCoordinatesFragment(
+                location = location.value,
+                close = { flag.value = false }
+            )
+        }
+        Button(onClick = { flag.value = true }, Modifier.wrapContentSize()) {
+            
         }
     }
 }
