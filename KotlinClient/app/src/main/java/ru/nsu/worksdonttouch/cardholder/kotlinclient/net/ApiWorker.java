@@ -30,10 +30,11 @@ public abstract class ApiWorker {
         return null;
     }
 
-    public static ApiWorker authTest(UserData data) throws IOException, NotAuthorizedException {
+    public static ApiWorker authTest(UserData data) throws IOException, NotAuthorizedException, NullPointerException {
+        HttpUrl url = Configuration.basicBuilder().addPathSegments("auth/test").build();
         RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
-                .url("http://localhost:8080/v1.0/")
+                .url(url)
                 .addHeader("Authorization", authorizationString(data))
                 .post(formBody)
                 .build();
@@ -41,6 +42,9 @@ public abstract class ApiWorker {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected code " + response);
+            }
+            if (response.body() == null) {
+                throw new NullPointerException();
             }
 
             SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);
@@ -58,10 +62,11 @@ public abstract class ApiWorker {
         }
     }
 
-    public static ApiWorker registration(UserData data) throws ServerConnectionException, IOException {
+    public static ApiWorker registration(UserData data) throws ServerConnectionException, IOException, NullPointerException {
+        HttpUrl url = Configuration.basicBuilder().addPathSegments("auth/registration").build();
         RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
-                .url("http://localhost:8080/v1.0/")
+                .url(url)
                 .addHeader("Login", data.getLogin())
                 .addHeader("Password", data.getPassword())
                 .post(formBody)
@@ -70,6 +75,9 @@ public abstract class ApiWorker {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected code " + response);
+            }
+            if (response.body() == null) {
+                throw new NullPointerException();
             }
 
             SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);

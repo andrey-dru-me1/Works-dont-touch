@@ -2,6 +2,16 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.ListenerEventRunner;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,19 +23,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.LocalCard;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.ListenerEventRunner;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutEvent;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 
 public class DataController {
 
@@ -55,7 +52,7 @@ public class DataController {
 
     private void loginUser(UserData user) throws Exception {
         try {
-            apiWorker = ApiWorker.login(user);
+            apiWorker = ApiWorker.authTest(user);
             if (apiWorker != null) {
                 dataFileContainer.setUserData(user);
                 isOffline = false;
@@ -70,7 +67,7 @@ public class DataController {
 
     private void registerUser(UserData user) throws Exception {
         try {
-            apiWorker = ApiWorker.register(user);
+            apiWorker = ApiWorker.registration(user);
             if (apiWorker != null) {
                 dataFileContainer.setUserData(user);
                 isOffline = false;
