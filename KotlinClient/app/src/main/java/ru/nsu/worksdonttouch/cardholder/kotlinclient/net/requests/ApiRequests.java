@@ -1,6 +1,6 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.net.requests;
 
-import android.os.Build;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -27,8 +27,8 @@ public class ApiRequests extends ApiWorker {
         this.user = user;
     }
 
-    static String authorizationString(UserData data) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    public static String authorizationString(UserData data) {
+        if (true) {
             return "Basic " + new String(Base64.getEncoder()
                     .encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
         }
@@ -92,7 +92,7 @@ public class ApiRequests extends ApiWorker {
     @Override
     public void getCard(long id, HttpCallback<Card> callback) {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("cards/get")
-                .addQueryParameter("cardId", id + "")
+                .addQueryParameter("id", id + "")
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
@@ -116,18 +116,16 @@ public class ApiRequests extends ApiWorker {
     @Override
     public void editCard(Card card, HttpCallback<Card> callback) {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("cards/edit").build();
-        RequestBody formBody = null;
+        RequestBody body = null;
         try {
-            formBody = new FormBody.Builder()
-                    .add("card", objectMapper.writeValueAsString(card))
-                    .build();
+            body = RequestBody.create(objectMapper.writeValueAsString(card), JSON);
         } catch (JsonProcessingException e) {
-            callback.answer(HttpCallback.HttpResult.OTHER, null);
+            throw new RuntimeException(e);
         }
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
                 .url(url)
-                .post(formBody)
+                .post(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -143,17 +141,18 @@ public class ApiRequests extends ApiWorker {
         }
     }
 
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
     @Override
     public void addCard(Card card, HttpCallback<Card> callback) {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("cards/add").build();
-        RequestBody formBody = new FormBody.Builder()
-                    .add("card", "{\"name\": \"" + card.getName() +
-                            "\", \"barcode\": \"" + card.getBarcode()+"\"}")
-                    .build();
+        RequestBody body = RequestBody.create("{\"name\": \"" + card.getName() +
+                "\", \"barcode\": \"" + card.getBarcode()+"\"}", JSON);
+
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
                 .url(url)
-                .post(formBody)
+                .post(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -163,6 +162,7 @@ public class ApiRequests extends ApiWorker {
             }
             card = objectMapper.readValue(response.body().string(), Card.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
+            return;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -173,7 +173,7 @@ public class ApiRequests extends ApiWorker {
     @Override
     public void imageGet(long id, File toWrite, HttpCallback<File> callback) {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("images/get")
-                .addQueryParameter("imageId", id + "")
+                .addQueryParameter("id", id + "")
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
@@ -187,7 +187,7 @@ public class ApiRequests extends ApiWorker {
             }
             try (InputStream inputStream = response.body().byteStream()) {
                 try (OutputStream outputStream = new FileOutputStream(toWrite)) {
-                    byte[] buffer = new byte[4096];
+                    byte[] buffer = new byte[1<<17];
                     int size;
                     while((size = inputStream.read(buffer)) > 0) {
                         outputStream.write(buffer, 0, size) ;
@@ -211,14 +211,18 @@ public class ApiRequests extends ApiWorker {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("images/upload")
                 .addQueryParameter("cardId", id + "")
                 .build();
-        MultipartBody body = new MultipartBody.Builder()
-                .addFormDataPart("file", file.getName(),
-                        RequestBody.create(file, MediaType.parse("image/png")))
+        final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/png");
+        RequestBody req = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart(
+                        "file",
+                        file.getName(),
+                        RequestBody.create(MEDIA_TYPE_PNG, file)
+                )
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
                 .url(url)
-                .post(body)
+                .post(req)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -238,16 +242,20 @@ public class ApiRequests extends ApiWorker {
     @Override
     public void editImage(File file, long id, HttpCallback<ImageAnswer> callback) {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("images/edit")
-                .addQueryParameter("imageId", id + "")
+                .addQueryParameter("id", id + "")
                 .build();
-        MultipartBody body = new MultipartBody.Builder()
-                .addFormDataPart("file", file.getName(),
-                        RequestBody.create(file, MediaType.parse("image/png")))
+        final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/png");
+        RequestBody req = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart(
+                        "file",
+                        file.getName(),
+                        RequestBody.create(MEDIA_TYPE_PNG, file)
+                )
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
                 .url(url)
-                .post(body)
+                .post(req)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -268,4 +276,5 @@ public class ApiRequests extends ApiWorker {
     public UserData getUserData() {
         return user;
     }
+
 }

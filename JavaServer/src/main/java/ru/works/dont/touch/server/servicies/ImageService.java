@@ -10,10 +10,12 @@ import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.ImageRepository;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class ImageService {
@@ -40,9 +42,11 @@ public class ImageService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        imageRepository.deleteById(id);
-        //TODO: добавить в remove возвращение изображения (если возможно) и удалять соответствующий файл
+    public Image deleteById(Long id) throws NotExistsException {
+        var img = findImageById(id);
+        imageRepository.deleteById(img.getId());
+        new File(getDirectory(img.getCardId()), "Image_"+img.getId()).delete();
+        return img;
     }
 
     /**
@@ -51,10 +55,21 @@ public class ImageService {
      * @param cardId the id of card
      */
     @Transactional
-    public void deleteByCardId(Long cardId) {
-        imageRepository.deleteAllByCardId(cardId);
+    public Iterable<Image> deleteByCardId(Long cardId) throws NotExistsException{
+        if (!imageRepository.existsByCardId(cardId)){
+            throw new NotExistsException("Image with cardId not exist, id: "+cardId);
+        }
+        var imgs = imageRepository.findAllByCardId(cardId);
         File dir = getDirectory(cardId);
+        for (Image img : imgs) {
+            try {
+                deleteById(img.getId());
+            } catch (NotExistsException ignore) {}
+        }
+        System.out.println(dir);
         dir.delete();
+        imageRepository.deleteAllByCardId(cardId);
+        return imgs;
     }
 
 
@@ -118,4 +133,10 @@ public class ImageService {
         return new File(imageDirectory, cardId.toString());
     }
 
+
+    private File getImageFile(Image image){
+        return new File(imageDirectory +
+                "/CardId_" + image.getCardId()
+                + "/Image_" + image.getId());
+    }
 }

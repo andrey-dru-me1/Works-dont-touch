@@ -1,5 +1,6 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.net;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import static ru.nsu.worksdonttouch.cardholder.kotlinclient.net.requests.ApiRequests.authorizationString;
 
 
 public abstract class ApiWorker {
@@ -35,11 +38,12 @@ public abstract class ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
+
             if (response.body() == null) {
                 throw new NullPointerException();
+            }
+            if (!response.isSuccessful()){
+                throw new NotAuthorizedException();
             }
 
             SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);
@@ -48,16 +52,17 @@ public abstract class ApiWorker {
                 return new ApiRequests(data);
             }
             else {
+
                 throw new NotAuthorizedException();
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static ApiWorker registration(UserData data) throws ServerConnectionException, IOException, NullPointerException {
+    public static ApiWorker registration(UserData data) throws IOException, NullPointerException {
         HttpUrl url = Configuration.basicBuilder().addPathSegments("auth/registration").build();
         RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
@@ -85,8 +90,8 @@ public abstract class ApiWorker {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
         }
+        return null;
     }
 
     public abstract void changePassword(String password, HttpCallback<SimpleHttpResult> callback);
