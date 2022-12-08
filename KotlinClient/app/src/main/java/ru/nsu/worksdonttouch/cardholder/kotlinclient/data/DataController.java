@@ -1,92 +1,176 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
-import androidx.annotation.NonNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card.CreateCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card.EditCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.image.AddImage;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Cards;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.ListenerEventRunner;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.CardsSaveLoad;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.interaction.UserSaveLoad;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.User;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.AddCardUpdate;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update;
 
 public class DataController {
 
     private static DataController instance;
 
-    private final Logger logger = Logger.getLogger(DataController.class.getName());
+    private final static Logger logger = Logger.getLogger(DataController.class.getName());
 
-    private final Collection<Card> cards = new ArrayList<>();
+    private ApiWorker apiWorker = null;
 
-    private User user = null;
+    private boolean isOffline = false;
 
-    private final List<UpdateListener> listeners = Collections.synchronizedList(new ArrayList<>());
+    private final DataFileContainer dataFileContainer;
 
-    private DataController() {}
+    private final static Map<Class<? extends Event>, List<ListenerEventRunner>> listenerMap = new ConcurrentHashMap<>();
+
+    private DataController(File dir) throws IOException {
+        dataFileContainer = new DataFileContainer(dir);
+    }
+
+    public static synchronized void init(File dir) throws IOException {
+        instance = new DataController(dir);
+    }
 
     public static synchronized DataController getInstance() {
-        if(instance == null) {
-            instance = new DataController();
-        }
         return instance;
     }
 
-    private void onUpdate(Update update) {
-        CardsSaveLoad.saveCards(this.getCards());
-        for(UpdateListener listener : listeners) {
-            listener.update(update);
+    private void loginUser(UserData user) throws Exception {
+        try {
+            apiWorker = ApiWorker.authTest(user);
+            if (apiWorker != null) {
+                dataFileContainer.setUserData(user);
+                isOffline = false;
+            } else {
+                runEvent(new LogOutEvent(user));
+            }
+        } catch (Exception e) {
+            apiWorker = null;
+            runEvent(new LogOutEvent(user));
         }
     }
 
-    public void addListener(@NonNull UpdateListener listener) {
-        listeners.add(listener);
+    private void registerUser(UserData user) throws Exception {
+        try {
+            apiWorker = ApiWorker.registration(user);
+            if (apiWorker != null) {
+                dataFileContainer.setUserData(user);
+                isOffline = false;
+            } else {
+                runEvent(new LogOutEvent(user));
+            }
+        } catch (Exception e) {
+            apiWorker = null;
+            runEvent(new LogOutEvent(user));
+        }
     }
 
-    public void removeListener(@NonNull UpdateListener listener) {
-        listeners.remove(listener);
+    public void startOffline() {
+        isOffline = true;
+        apiWorker = null;
     }
 
-    public void putCard(Card card) {
-        cards.add(card);
-        logger.log(Level.INFO, "new card: " + card);
-        onUpdate(new AddCardUpdate(card));
+    public boolean isOffline() {
+        return isOffline;
     }
 
-    public void putUserFromFile() {
-        user = UserSaveLoad.getUserFromFile();
+    public void createCard(String name, String barcode, DataCallBack<Card> callBack) {
+        CreateCard createCard = new CreateCard(this, callBack);
+        createCard.apply(name, barcode);
     }
 
-    public void putCardsFromFile() {
-        Collection<Card> cardList = CardsSaveLoad.getCardsFromFile();
-
-        if(cardList == null) return;
-
-        cards.addAll(cardList);
-        logger.log(Level.INFO, "loaded cards:  " + cards);
+    public void editCard(Card card, DataCallBack<Card> callBack) {
+        EditCard editCard = new EditCard(this, callBack);
+        editCard.apply(card);
     }
 
-    public Collection<Card> getCards() {
-        return cards;
+    public void deleteCard(Card card, DataCallBack<Card> callBack) {
     }
 
-    public User getUser() {
-        return user;
+    public void getImage(Card card, long id, DataCallBack<File> callBack) {
+
     }
 
-    public void setUser(User user) {
-        this.user = user;
-        UserSaveLoad.saveUser(user);
+    public void addImage(Card card, InputStream inputStream, DataCallBack<File> callBack) {
+        AddImage addImage = new AddImage(this, callBack);
+        addImage.apply(card, inputStream);
     }
+
+    public void getCards(DataCallBack<Cards> callBack) {
+
+    }
+
+    public void getCards(DataCallBack<Cards> callBack, double latitude, double longitude) {
+    }
+
+    public void pushUpdates() {
+        //TODO: реализовать
+    }
+
+    public ApiWorker getApiWorker() {
+        return apiWorker;
+    }
+
+    public DataFileContainer getDataFileContainer() {
+        return dataFileContainer;
+    }
+
+    public static void registerListener(@NotNull EventListener eventListener) {
+        Class<?> clazz = eventListener.getClass();
+        while (!clazz.isPrimitive()) {
+            for (Method m : clazz.getMethods()) {
+                if (m.isAnnotationPresent(EventHandler.class) && m.getParameterTypes().length == 1 && Event.class.isAssignableFrom(m.getParameterTypes()[0])) {
+                    Class<? extends Event> type = (Class<? extends Event>) m.getParameterTypes()[0];
+                    if (listenerMap.get(type) == null)
+                        listenerMap.put(type, Collections.synchronizedList(new ArrayList<>()));
+                    listenerMap.get(type).add(new ListenerEventRunner(m, eventListener));
+                }
+            }
+        }
+    }
+
+    public static void unregisterListener(@NotNull EventListener eventListener) {
+        listenerMap.forEach((clazz, listener) -> {
+            listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
+        });
+    }
+
+    public static void runEvent(@NotNull Event event) {
+        for (ListenerEventRunner runner : listenerMap.get(event.getClass())) {
+            try {
+                runner.run(event);
+            } catch (Throwable e) {
+                logger.log(Level.WARNING, "Event processing error " + runner, e);
+            }
+        }
+    }
+
+    private static <T> void runCallback(DataCallBack<T> callBack, DataCallBack.DataStatus status, T type) {
+        try {
+            callBack.callback(status, type);
+        } catch (Throwable e) {
+            logger.log(Level.WARNING, "Callback error", e);
+        }
+    }
+
 
 }
