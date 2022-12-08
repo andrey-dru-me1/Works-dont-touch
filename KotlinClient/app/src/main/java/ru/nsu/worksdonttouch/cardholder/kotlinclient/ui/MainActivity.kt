@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,7 +74,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = Color.hsl(245F, 0.3F, 0.2F)
                 ) {
                     val list = remember { cards }
                     CardsGrid(list)
@@ -107,8 +109,14 @@ class MainActivity : ComponentActivity(), UpdateListener {
         val state = rememberPullRefreshState(refreshing, ::refresh)
         val rotation = animateFloatAsState(state.progress * 120)
 
-        Box( Modifier.pullRefresh(state) ) {
-            LazyVerticalGrid(
+        Box(
+            Modifier
+                .fillMaxSize()
+                .pullRefresh(state) ) {
+            LazyVerticalGrid (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp),
                 columns = GridCells.Fixed(2),
             ) {
                 cards.map {  item { CardView(it) } }
@@ -147,7 +155,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
         IconButton(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp, 5.dp),
+                .padding(3.5.dp),
             onClick = {
                 val intent = Intent(mContext, CardInfoActivity::class.java)
                 intent.putExtra("card", card)
@@ -155,7 +163,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
             },
         )
         {
-            Column {
+            Box {
                 Image(
                     bitmap = card.image.asImageBitmap(),
                     contentDescription = card.name,
@@ -165,7 +173,20 @@ class MainActivity : ComponentActivity(), UpdateListener {
                         .aspectRatio((86.0 / 54).toFloat())
                         .clip(RoundedCornerShape(10.dp))
                 )
-                Text(text = "Shop " + card.name)
+                Box(
+                    contentAlignment = Alignment.BottomStart,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .align(Alignment.BottomStart)
+                ) {
+                    Text(
+                        text = card.name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(6.dp, 0.dp)
+                    )
+                }
             }
         }
     }
@@ -202,6 +223,21 @@ class MainActivity : ComponentActivity(), UpdateListener {
 @Composable
 fun DefaultPreview() {
     KotlinClientTheme {
-        Text("lol")
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Gray) ) {
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(2),
+            ) {
+                item {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Blue))
+                }
+            }
+        }
     }
 }

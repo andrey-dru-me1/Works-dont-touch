@@ -5,4 +5,11 @@
     <string name="title_activity_authorisation">AuthorisationActivity</string>
     <string name="title_activity_edit_card">EditCardActivity</string>
     <string name="title_activity_registration">RegistrationActivity</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="textview">TextView</string>
+    <string name="add">add</string>
+    <string name="apply">apply</string>
 </resources>
