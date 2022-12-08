@@ -261,11 +261,11 @@ public class DataController {
         }
     }
 
-    public static void unregisterListener(@NotNull EventListener eventListener) {
-        listenerMap.forEach((clazz, listener) -> {
-            listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
-        });
-    }
+//    public static void unregisterListener(@NotNull EventListener eventListener) {
+//        listenerMap.forEach((clazz, listener) -> {
+//            listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
+//        });
+//    }
 
     public static void runEvent(@NotNull Event event) {
         for (ListenerEventRunner runner : listenerMap.get(event.getClass())) {

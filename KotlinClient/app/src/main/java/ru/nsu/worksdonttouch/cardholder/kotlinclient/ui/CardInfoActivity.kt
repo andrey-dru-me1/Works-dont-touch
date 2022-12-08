@@ -39,9 +39,13 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
+import java.io.File
+import javax.security.auth.callback.Callback
 
 
 class CardInfoActivity : ComponentActivity() {
@@ -60,7 +64,7 @@ class CardInfoActivity : ComponentActivity() {
                     val card: Card = intent.getParcelableExtra("card")!!
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
-                    var selectedLocation: Int? = null
+                    var selectedLocation: Location? = null
 
                     Column {
 
@@ -94,20 +98,34 @@ class CardInfoActivity : ComponentActivity() {
 
                         //Other images of the card
                         Column {
-                            //TODO: show other images of the card
+                            card.images.map {
+                                var image: File? = null
+                                DataController.getInstance().getImage(card, it) { _, file -> image = file}
+                                Image(painter = rememberAsyncImagePainter(model = image), contentDescription = card.name)
+                            }
                         }
 
                         Text("Locations:")
                         Column {
+                            //TODO: remove sample location
                             ClickableText(
                                 text = AnnotatedString("Sample location"),
                                 style = TextStyle(color = Color.Blue),
                                 onClick = {
-                                    selectedLocation = 0
+                                    selectedLocation = null
                                     openDialog.value = true
                                 }
                             )
-                            //TODO: show location list
+                            card.locations.map {
+                                ClickableText(
+                                    text = AnnotatedString(it.name),
+                                    style = TextStyle(color = Color.Blue),
+                                    onClick = { _ ->
+                                        selectedLocation = it
+                                        openDialog.value = true
+                                    }
+                                )
+                            }
                         }
 
                     }
@@ -131,32 +149,39 @@ class CardInfoActivity : ComponentActivity() {
                     }
 
                     if(openDialog.value) {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color.Black.copy(alpha = 0.6f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(35.dp, 80.dp)
-                                    .clip(RoundedCornerShape(50.dp))
-                                    .fillMaxSize()
-                                    .background(Color.White)
-                                    .border(
-                                        width = 2.dp,
-                                        color = Color.LightGray,
-                                        shape = RoundedCornerShape(50.dp)
-                                    )
-                            ) {
-                                Popup(
-                                    alignment = Alignment.Center,
-                                    properties = PopupProperties(),
-                                    onDismissRequest = { openDialog.value = false },
-                                ) {
-                                    Text(text = "Location", fontSize = 50.sp)
-                                }
-                            }
+                        EditCoordinatesFragment(location = selectedLocation) {
+                            openDialog.value = false
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun EditCoordinatesFragment(location: Location?, close: () -> Unit) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color.Black.copy(alpha = 0.6f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(35.dp, 80.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .border(
+                        width = 2.dp,
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(50.dp)
+                    )
+            ) {
+                Popup(
+                    alignment = Alignment.Center,
+                    properties = PopupProperties(),
+                    onDismissRequest = { close.apply {  } },
+                ) {
+                    Text(text = "Location", fontSize = 50.sp)
                 }
             }
         }

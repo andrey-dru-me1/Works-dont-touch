@@ -36,11 +36,15 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import java.io.File
 import java.util.*
 
-class MainActivity : ComponentActivity()/*, UpdateListener*/ {
+class MainActivity : ComponentActivity(), EventListener {
 
     private val cards: SnapshotStateList<Card> = mutableStateListOf()
 
@@ -48,14 +52,9 @@ class MainActivity : ComponentActivity()/*, UpdateListener*/ {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //TODO: check user authorisation
-//        {
-//            val intent = Intent(this, AuthorisationActivity::class.java)
-//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//            startActivity(intent)
-//        }
+        DataController.init(this.filesDir)
 
-        //TODO: Get all the cards
+        DataController.getInstance().getCards { _, data -> cards.addAll(data) }
 
         val requestPermissionLauncher =
             registerForActivityResult(
@@ -78,8 +77,7 @@ class MainActivity : ComponentActivity()/*, UpdateListener*/ {
                 }
             }
         }
-        //TODO: add listener
-//        DataController.getInstance().addListener(this)
+//        DataController.registerListener(this);
     }
 
 //    override fun update(update: Update) {
@@ -164,8 +162,11 @@ class MainActivity : ComponentActivity()/*, UpdateListener*/ {
         )
         {
             Box {
+                val image: MutableState<File?> = remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
+                DataController.getInstance()
+                    .getImage(card, card.images[0]) { _, file -> image.value = file}
                 Image(
-                    painter = rememberAsyncImagePainter(model = ),
+                    painter = rememberAsyncImagePainter(model = image),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier

@@ -1,6 +1,7 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,15 +22,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import java.io.ByteArrayOutputStream
 
 
 class EditCardActivity : ComponentActivity() {
-
-    private var cardName: String? = ""
-    private var barcode: String? = ""
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,28 +40,26 @@ class EditCardActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
 
-                    val card: Card? =  intent.getParcelableExtra<Card>("card")
-                    cardName = card?.name
-                    barcode = card?.barcode
+                    val card: Card? = intent.getParcelableExtra<Card>("card")
 
                     //TODO: delete file
 
                     Column {
-                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf() }   //get current image
+                        val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }   //get current image
+                        DataController.getInstance().getImage(card, card?.images?.get(0)
+                            ?: 0) { _, data -> bitmap.value = BitmapFactory.decodeFile(data.absolutePath) }
+
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()
-                        )
-                        {
-                            bitmap.value = it
-                        }
+                        ) { bitmap.value = it }
 
-                        CardNameEdit()
-                        BarCodeEdit()
+                        CardNameEdit(card)
+                        BarCodeEdit(card)
                         Button(
                             onClick = { launcher.launch(null) },
                             content = { Text("Take a photo") }
                         )
-                        SaveButton(bitmap.value, card)
+                        SaveButton(card)
                         bitmap.value?.asImageBitmap()?.let {
                             Image(
                                 bitmap = it,
@@ -82,16 +78,16 @@ class EditCardActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CardNameEdit() {
+    fun CardNameEdit(card: Card?) {
         val focusRequester = remember { FocusRequester() }
-        var text by rememberSaveable { mutableStateOf(cardName) }
+        var text by rememberSaveable { mutableStateOf(card?.name) }
         TextField(
             value = text ?: "",
             modifier = Modifier.focusRequester(focusRequester),
             label = { Text("Shop name") },
             onValueChange = {
                 text = it
-                this.cardName = it
+                card?.name = it
             }
         )
         LaunchedEffect(Unit) {
@@ -100,29 +96,24 @@ class EditCardActivity : ComponentActivity() {
     }
 
     @Composable
-    fun BarCodeEdit() {
-        var text by rememberSaveable { mutableStateOf(barcode) }
+    fun BarCodeEdit(card: Card?) {
+        var text by rememberSaveable { mutableStateOf(card?.barcode) }
         TextField(
             value = text ?: "",
             label = { Text("Barcode") },
             onValueChange = {
                 text = it
-                this.barcode = it
+                card?.barcode = it
             }
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun SaveButton(bitmap: Bitmap?, card: Card?) {
+    fun SaveButton(card: Card?) {
         Button(onClick = {
 
-            val stream = ByteArrayOutputStream()
-            bitmap?.compress(Bitmap.CompressFormat.PNG,0,stream)
-            //TODO: rewrite image
-
-            //TODO: edit card globally
-//            DataController.getInstance().editCard(card, cardName, this.barcode, bitmap, path)
+            DataController.getInstance().editCard(card) {_, _ -> }
 
             finish()
         }) {
