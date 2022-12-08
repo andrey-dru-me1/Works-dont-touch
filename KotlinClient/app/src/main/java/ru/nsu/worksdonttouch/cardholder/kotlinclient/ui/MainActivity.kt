@@ -21,7 +21,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.pullRefreshIndicatorTransform
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,17 +35,17 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Cards
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
 import java.io.File
 import java.util.*
 
 class MainActivity : ComponentActivity(), EventListener {
 
-    private val cards: SnapshotStateList<Card> = mutableStateListOf()
+    private val cards: MutableState<Cards?> = mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +53,7 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
-        DataController.getInstance().getCards { _, data -> cards.addAll(data) }
+        DataController.getInstance().getCards { _, data -> cards.value = data }
 
         val requestPermissionLauncher =
             registerForActivityResult(
@@ -89,7 +88,7 @@ class MainActivity : ComponentActivity(), EventListener {
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun CardsGrid(cards: SnapshotStateList<Card>) {
+    fun CardsGrid(cards: MutableState<Cards?>) {
         val refreshScope = rememberCoroutineScope()
         var refreshing by remember { mutableStateOf(false) }
 
@@ -116,7 +115,8 @@ class MainActivity : ComponentActivity(), EventListener {
                     .padding(5.dp),
                 columns = GridCells.Fixed(2),
             ) {
-                cards.map {  item { CardView(it) } }
+                cards.value?.sortedCards?.sortedBy {it.distance}?.map {  item { CardView(it.card) } }
+                cards.value?.other?.map {  item { CardView(it) } }
             }
 
             //Spinning round
