@@ -1,6 +1,7 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.net;
 
 import android.os.Build;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
@@ -19,7 +20,13 @@ import java.util.Base64;
 @SuppressWarnings("unused")
 public abstract class ApiWorker {
     private static final OkHttpClient client = new OkHttpClient();
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
+    private class Answer {
+        public String code;
+        public String reason;
+
+    }
 
     static String authorizationString(UserData data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -45,8 +52,11 @@ public abstract class ApiWorker {
             if (response.body() == null) {
                 throw new IOException("No response");
             }
+            String resp = response.body().string();
+            Answer answer = objectMapper.readValue(resp, Answer.class);
+            SimpleHttpResult simpleHttpResult = new SimpleHttpResult(answer.code, answer.reason);
 
-            if (response.body().string().equals("true")) {
+            if (simpleHttpResult.getCode().equals("ACCEPTED")) {
                 return new ApiRequests(data);
             }
             else {
@@ -76,7 +86,15 @@ public abstract class ApiWorker {
             if (response.body() == null) {
                 throw new IOException("No response");
             }
-            return new ApiRequests(data);
+            String resp = response.body().string();
+            Answer answer = objectMapper.readValue(resp, Answer.class);
+            SimpleHttpResult simpleHttpResult = new SimpleHttpResult(answer.code, answer.reason);
+            if (simpleHttpResult.getCode().equals("ACCEPTED")) {
+                return new ApiRequests(data);
+            }
+            else {
+                throw new ServerConnectionException();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

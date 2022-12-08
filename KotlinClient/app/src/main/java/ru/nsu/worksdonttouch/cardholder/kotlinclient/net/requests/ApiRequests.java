@@ -1,12 +1,12 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.net.requests;
 
 import android.os.Build;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.exception.NotAuthorizedException;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.objects.ImageAnswer;
@@ -16,27 +16,28 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Map;
 
 @SuppressWarnings("unused")
 public class ApiRequests extends ApiWorker {
     protected UserData user;
 
+    private static final OkHttpClient client = new OkHttpClient();
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
+    private class Answer {
+        public String code;
+        public String reason;
+
+    }
+
     public ApiRequests(UserData user) {
         this.user = user;
     }
 
-    static class Gist {
-        Map<String, GistFile> files;
-
+    private SimpleHttpResult responseToHttp(Response response) throws IOException {
+        Answer answer = objectMapper.readValue(response.body().string(), Answer.class);
+        return new SimpleHttpResult(answer.code, answer.reason);
     }
-    static class GistFile {
-        String content;
-
-    }
-    private static final OkHttpClient client = new OkHttpClient();
-    private final Moshi moshi = new Moshi.Builder().build();
-    private final JsonAdapter<Gist> gistJsonAdapter = moshi.adapter(Gist.class);
 
     private boolean checkResponse(Response response) throws Exception {
         if (!response.isSuccessful()) {
@@ -45,7 +46,14 @@ public class ApiRequests extends ApiWorker {
         if (response.body() == null) {
             throw new IOException("No response");
         }
-        return true;
+        SimpleHttpResult simpleHttpResult = responseToHttp(response);
+
+        if (simpleHttpResult.getCode().equals("ACCEPTED")) {
+            return true;
+        }
+        else {
+            throw new NotAuthorizedException();
+        }
     }
 
     static String authorizationString(UserData data) {
@@ -70,9 +78,13 @@ public class ApiRequests extends ApiWorker {
             if (!checkResponse(response)) {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
-
-            SimpleHttpResult simpleHttpResult = null;
-            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, simpleHttpResult);
+            SimpleHttpResult simpleHttpResult = responseToHttp(response);
+            if (simpleHttpResult.getCode().equals("ACCEPTED")) {
+                callback.answer(HttpCallback.HttpResult.SUCCESSFUL, simpleHttpResult);
+            }
+            else {
+                // TODO
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -94,9 +106,9 @@ public class ApiRequests extends ApiWorker {
             if (!checkResponse(response)) {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
-
-            CardList cardList = null;
+            CardList cardList = objectMapper.readValue(response.body().string(), CardList.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, cardList);
+            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -117,9 +129,9 @@ public class ApiRequests extends ApiWorker {
             if (!checkResponse(response)) {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
-
-            Card card = null;
+            Card card = objectMapper.readValue(response.body().string(), Card.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
+            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -141,8 +153,8 @@ public class ApiRequests extends ApiWorker {
             if (!checkResponse(response)) {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
-
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
+            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -164,7 +176,6 @@ public class ApiRequests extends ApiWorker {
             if (!checkResponse(response)) {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
-
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
 
         } catch (IOException e) {
@@ -212,7 +223,9 @@ public class ApiRequests extends ApiWorker {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
 
-            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, null);
+            ImageAnswer imageAnswer = objectMapper.readValue(response.body().string(), ImageAnswer.class);
+            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, imageAnswer);
+            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -236,8 +249,10 @@ public class ApiRequests extends ApiWorker {
                 callback.answer(HttpCallback.HttpResult.FAIL, null);
             }
 
+            ImageAnswer imageAnswer = objectMapper.readValue(response.body().string(), ImageAnswer.class);
+            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, imageAnswer);
 
-            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, null);
+            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
