@@ -44,6 +44,7 @@ public class ImageService {
     @Transactional
     public Image deleteById(Long id) throws NotExistsException {
         var img = findImageById(id);
+        imageRepository.deleteById(img.getId());
         new File(getDirectory(img.getCardId()), "Image_"+img.getId()).delete();
         return img;
     }
