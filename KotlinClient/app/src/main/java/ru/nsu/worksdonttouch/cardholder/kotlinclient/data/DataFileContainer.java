@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.LocalCard;
 
@@ -42,6 +43,8 @@ public class DataFileContainer {
     private final File localImagesDir;
 
     private final File updateListFile;
+
+    private final File userDataFile;
 
     private final ObjectMapper mapper;
 
@@ -69,28 +72,37 @@ public class DataFileContainer {
         if (localImagesDir.mkdirs()) {
             logger.log(Level.INFO, "Create local images directory");
         }
-        this.updateListFile = new File(dir, "updateList");
+        this.updateListFile = new File(dir, "updateList.json");
         if (this.updateListFile.createNewFile()) {
             logger.log(Level.INFO, "Create update list file");
+        }
+        this.userDataFile = new File(dir, "userData.json");
+        if (this.userDataFile.createNewFile()) {
+            logger.log(Level.INFO, "Create user data file");
         }
         mapper = new ObjectMapper();
         loadCards();
     }
 
-    public void save(@NotNull Card card) throws IOException {
+    public Card save(@NotNull Card card) throws IOException {
         if(card.getId() != null) {
             File f = new File(cardDir, card.getId() + ".json");
             mapper.writeValue(f, card);
             cards.put(card.getId(), card);
+            return card;
         } else {
+            LocalCard localCard;
             if (card instanceof LocalCard) {
-                LocalCard localCard = (LocalCard) card;
-                if (localCard.getLocalID() == null)
-                    localCard.setLocalID(localCardNumber.incrementAndGet());
-                File f = new File(localCardDir, (localCard.getLocalID() + ".json"));
-                mapper.writeValue(f, localCard);
-                localCards.put(localCard.getLocalID(), localCard);
+                localCard = (LocalCard) card;
+            } else {
+                localCard = new LocalCard(card.getName(), card.getBarcode(), card.getImages(), card.getLocations());
             }
+            if (localCard.getLocalID() == null)
+                localCard.setLocalID(localCardNumber.incrementAndGet());
+            File f = new File(localCardDir, (localCard.getLocalID() + ".json"));
+            mapper.writeValue(f, localCard);
+            localCards.put(localCard.getLocalID(), localCard);
+            return localCard;
         }
     }
 
@@ -118,6 +130,15 @@ public class DataFileContainer {
         } else {
             return cards.containsKey(card.getId());
         }
+    }
+
+    public UserData getUserDataFile() throws IOException {
+        UserData userData = mapper.readValue(userDataFile, UserData.class);
+        return userData;
+    }
+
+    public void setUserData(UserData userData) throws IOException {
+        mapper.writeValue(userDataFile, UserData.class);
     }
 
     private void loadCards() throws NullPointerException {

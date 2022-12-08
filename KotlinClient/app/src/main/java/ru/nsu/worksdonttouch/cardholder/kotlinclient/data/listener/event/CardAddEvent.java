@@ -1,8 +1,9 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
 
-public class CardAddEvent {
+public class CardAddEvent implements Event {
 
     private Card card;
 

@@ -40,4 +40,6 @@ public abstract class ApiWorker {
 
     public abstract void uploadImage(long id, HttpCallback<ImageAnswer> callback) throws Exception;
 
+    public abstract UserData getUserData();
+
 }
