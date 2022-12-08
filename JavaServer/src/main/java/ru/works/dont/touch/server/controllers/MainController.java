@@ -2,14 +2,13 @@ package ru.works.dont.touch.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.rest.map.TwoGisService;
 import ru.works.dont.touch.server.servicies.ImageService;
 import ru.works.dont.touch.server.servicies.UserService;
 
@@ -26,6 +25,8 @@ public class MainController {
     private UserService userService;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    TwoGisService twoGisService;
 
     @PostMapping(path = "/ad") // Map ONLY POST Requests
     public @ResponseBody String addNewUser() {
@@ -102,4 +103,14 @@ public class MainController {
 
         return imageService.getUrisByCardId((long)25);
     }
+
+    @RequestMapping(path = "/post",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            method = RequestMethod.GET)
+    public TwoGisService.Card2 getCard(){
+        TwoGisService.Card2 card = new TwoGisService.Card2(1, "5", "5", new long[1], null);
+        twoGisService.cardAdd();
+        return card;
+    }
+
 }
