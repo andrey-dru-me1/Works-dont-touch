@@ -46,6 +46,11 @@ public class CoordinateService {
     }
 
     @Transactional
+    public void deleteByLocationId(Long locationId) {
+        coordinateRepository.deleteAllByLocationId(locationId);
+    }
+
+    @Transactional
     public void deleteByCardId(Long cardId) {
         coordinateRepository.deleteAllByLocationId(cardId);
     }

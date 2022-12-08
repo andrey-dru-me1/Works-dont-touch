@@ -1,6 +1,7 @@
 package ru.works.dont.touch.server.servicies;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.exceptions.ExistsException;
@@ -21,6 +22,8 @@ public class UserService {
     }
 
     private final UserRepository userRepository;
+    @Autowired
+    private CardService cardService;
 
     public User findUserByID(Long id) throws NotExistsException {
         if (idCacheMap.containsKey(id)) {
@@ -81,13 +84,29 @@ public class UserService {
     }
 
     @Transactional
-    public boolean deleteUserByLogin(String login) {
-        return userRepository.deleteByLogin(login);
+    public User deleteUserByLogin(String login) throws NotExistsException {
+        User user = getUserByLogin(login);
+        return deleteUserById(user.getId());
+    }
+    @Transactional
+    public User deleteUserById(Long id) throws NotExistsException {
+        User user = findUserByID(id);
+        idCacheMap.remove(user.getId());
+        loginCacheMap.remove(user.getLogin());
+        cardService.deleteByOwnerId(user.getId());
+        userRepository.deleteById(id);
+        return user;
     }
 
     @Transactional
-    public void deleteAllUsers() {
-        userRepository.deleteAll();
+    public Iterable<User> deleteAllUsers() {
+        var users = findAll();
+        for (User user : users) {
+            try {
+                deleteUserById(user.getId());
+            } catch (NotExistsException ignored) {}
+        }
+        return users;
     }
 
     @Transactional

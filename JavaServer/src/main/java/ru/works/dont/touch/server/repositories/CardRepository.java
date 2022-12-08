@@ -12,7 +12,9 @@ public interface CardRepository extends CrudRepository<Card, Integer> {
 
     Iterable<Card> findAllByOwnerId(Long ownerId);
 
-    boolean deleteAllByOwnerId(Long ownerId);
+    void deleteAllByOwnerId(Long ownerId);
+    void deleteAllById(Long id);
+
 
 
     @Query("SELECT card from Card card " +
