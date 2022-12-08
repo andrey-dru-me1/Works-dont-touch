@@ -8,32 +8,39 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.pullRefreshIndicatorTransform
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.UpdateListener
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.Update
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.update.UpdateType
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import java.util.*
 
-class MainActivity : ComponentActivity(), UpdateListener {
+class MainActivity : ComponentActivity()/*, UpdateListener*/ {
 
     private val cards: SnapshotStateList<Card> = mutableStateListOf()
 
@@ -41,13 +48,14 @@ class MainActivity : ComponentActivity(), UpdateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        DataController.getInstance().putUserFromFile()
-        if(DataController.getInstance().user == null) {
-            startActivity(Intent(this, AuthorisationActivity::class.java))
-        }
+        //TODO: check user authorisation
+//        {
+//            val intent = Intent(this, AuthorisationActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//            startActivity(intent)
+//        }
 
-        DataController.getInstance().putCardsFromFile()
-        cards.addAll(DataController.getInstance().cards)
+        //TODO: Get all the cards
 
         val requestPermissionLauncher =
             registerForActivityResult(
@@ -55,14 +63,13 @@ class MainActivity : ComponentActivity(), UpdateListener {
             ){}
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        requestPermissionLauncher.launch(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
 
         setContent {
             KotlinClientTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = Color.hsl(245F, 0.3F, 0.2F)
                 ) {
                     val list = remember { cards }
                     CardsGrid(list)
@@ -71,22 +78,72 @@ class MainActivity : ComponentActivity(), UpdateListener {
                 }
             }
         }
-        DataController.getInstance().addListener(this)
+        //TODO: add listener
+//        DataController.getInstance().addListener(this)
     }
 
-    override fun update(update: Update) {
-        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
-            cards.clear()
-            cards.addAll(DataController.getInstance().cards)
-        }
-    }
+//    override fun update(update: Update) {
+//        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
+//            cards.clear()
+//            cards.addAll(DataController.getInstance().cards)
+//        }
+//    }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun CardsGrid(cards: SnapshotStateList<Card>) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+        val refreshScope = rememberCoroutineScope()
+        var refreshing by remember { mutableStateOf(false) }
+
+        fun refresh() = refreshScope.launch {
+            refreshing = true
+            //TODO: Try connecting to a server and synchronize all the data
+            delay(1500)
+            refreshing = false
+        }
+
+        val state = rememberPullRefreshState(refreshing, ::refresh)
+        val rotation = animateFloatAsState(state.progress * 120)
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .pullRefresh(state)
         ) {
-            cards.map { item { CardView(it) } }
+
+            //Grid of cards
+            LazyVerticalGrid (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp),
+                columns = GridCells.Fixed(2),
+            ) {
+                cards.map {  item { CardView(it) } }
+            }
+
+            //Spinning round
+            Surface(
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.TopCenter)
+                    .pullRefreshIndicatorTransform(state)
+                    .rotate(rotation.value),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.DarkGray,
+                elevation = if (state.progress > 0 || refreshing) 20.dp else 0.dp,
+            ) {
+                Box {
+                    if (refreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(25.dp),
+                            color = Color.White,
+                            strokeWidth = 3.dp
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -98,7 +155,7 @@ class MainActivity : ComponentActivity(), UpdateListener {
         IconButton(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp, 5.dp),
+                .padding(3.5.dp),
             onClick = {
                 val intent = Intent(mContext, CardInfoActivity::class.java)
                 intent.putExtra("card", card)
@@ -106,17 +163,30 @@ class MainActivity : ComponentActivity(), UpdateListener {
             },
         )
         {
-            Column {
+            Box {
                 Image(
-                    bitmap = card.image.asImageBitmap(),
+                    painter = rememberAsyncImagePainter(model = ),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
-                        .aspectRatio((86.0/54).toFloat())
+                        .aspectRatio((86.0 / 54).toFloat())
                         .clip(RoundedCornerShape(10.dp))
                 )
-                Text(text = "Shop " + card.name)
+                Box(
+                    contentAlignment = Alignment.BottomStart,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .align(Alignment.BottomStart)
+                ) {
+                    Text(
+                        text = card.name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(6.dp, 0.dp)
+                    )
+                }
             }
         }
     }
@@ -153,6 +223,21 @@ class MainActivity : ComponentActivity(), UpdateListener {
 @Composable
 fun DefaultPreview() {
     KotlinClientTheme {
-        Text("lol")
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Gray) ) {
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(2),
+            ) {
+                item {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Blue))
+                }
+            }
+        }
     }
 }

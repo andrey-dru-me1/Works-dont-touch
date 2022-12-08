@@ -107,4 +107,7 @@ public abstract class ApiWorker {
     public abstract void uploadImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception;
 
     public abstract void editImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception;
+    
+    public abstract UserData getUserData();
+
 }

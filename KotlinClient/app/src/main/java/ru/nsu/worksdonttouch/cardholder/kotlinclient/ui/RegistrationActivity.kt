@@ -19,7 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
-class AuthorisationActivity : ComponentActivity() {
+class RegistrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -47,13 +47,13 @@ class AuthorisationActivity : ComponentActivity() {
                         Button(
                             onClick = { onSaveButtonClick(login, password) }
                         ) {
-                            Text("Log in")
+                            Text("Register")
                         }
                         ClickableText(
-                            text = AnnotatedString("Sign up"),
+                            text = AnnotatedString("Sign in"),
                             style = TextStyle(color = Color.Blue, textDecoration = TextDecoration.Underline),
                             onClick = {
-                                val intent = Intent(this@AuthorisationActivity, RegistrationActivity::class.java)
+                                val intent = Intent(this@RegistrationActivity, AuthorisationActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
                             }
@@ -65,13 +65,8 @@ class AuthorisationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        //TODO: set user globally
-//        DataController.getInstance().user = User(
-//            login = login,
-//            password = password,
-//            token = Random(System.currentTimeMillis()).toString()
-//        )
-        startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+        //TODO: register new user
+        startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
     }
 
 }

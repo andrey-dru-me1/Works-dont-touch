@@ -1,28 +1,37 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location;
 
-public class Card {
+public class Card implements Parcelable {
 
     @Nullable
-    private Long id;
+    protected Long id;
     @NotNull
-    private String name;
+    protected String name;
     @Nullable
-    private String barcode;
+    protected String barcode;
     @NotNull
-    private List<Long> images;
+    protected List<Long> images;
     @NotNull
-    private List<Location> locations;
+    protected List<Location> locations;
 
     @JsonCreator
     public Card(
@@ -55,9 +64,33 @@ public class Card {
         this.id = null;
         this.name = name;
         this.barcode = barcode;
-        this.images = images == null ? new ArrayList<>() : images;
-        this.locations = locations == null ? new ArrayList<>() : locations;
+        this.images = Collections.synchronizedList(images == null ? new ArrayList<>() : images);
+        this.locations = Collections.synchronizedList(locations == null ? new ArrayList<>() : locations);
     }
+
+    protected Card(Parcel in) {
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readLong();
+        }
+        name = in.readString();
+        barcode = in.readString();
+        in.readList(images, null);
+        in.readList(locations, null);
+    }
+
+    public static final Creator<Card> CREATOR = new Creator<Card>() {
+        @Override
+        public Card createFromParcel(Parcel in) {
+            return new Card(in);
+        }
+
+        @Override
+        public Card[] newArray(int size) {
+            return new Card[size];
+        }
+    };
 
     @Nullable
     public Long getId() {
@@ -84,15 +117,30 @@ public class Card {
         return locations;
     }
 
-    public void setId(@Nullable Long id) {
-        this.id = id;
-    }
-
     public void setName(@NotNull String name) {
         this.name = name;
     }
 
     public void setBarcode(@Nullable String barcode) {
         this.barcode = barcode;
+    }
+
+//    public Card clone() {
+//        return new Card(id, name, barcode, new ArrayList<>(images), locations.stream().map(Location::clone).collect(Collectors.toList()));
+//    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        if(this.id == null) return;
+        dest.writeLong(this.id);
+        dest.writeString(this.name);
+        dest.writeString(barcode);
+        dest.writeList(images);
+        dest.writeList(locations);
     }
 }
