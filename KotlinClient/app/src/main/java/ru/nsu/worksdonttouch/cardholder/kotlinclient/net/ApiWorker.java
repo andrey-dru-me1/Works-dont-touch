@@ -22,12 +22,6 @@ public abstract class ApiWorker {
     private static final OkHttpClient client = new OkHttpClient();
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    private class Answer {
-        public String code;
-        public String reason;
-
-    }
-
     static String authorizationString(UserData data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return "Basic " + new String(Base64.getEncoder()
@@ -36,7 +30,7 @@ public abstract class ApiWorker {
         return null;
     }
 
-    public static ApiWorker authTest(UserData data) throws Exception {
+    public static ApiWorker authTest(UserData data) throws IOException, NotAuthorizedException {
         RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
                 .url("http://localhost:8080/v1.0/")
@@ -49,12 +43,7 @@ public abstract class ApiWorker {
                 throw new IOException("Unexpected code " + response);
             }
 
-            if (response.body() == null) {
-                throw new IOException("No response");
-            }
-            String resp = response.body().string();
-            Answer answer = objectMapper.readValue(resp, Answer.class);
-            SimpleHttpResult simpleHttpResult = new SimpleHttpResult(answer.code, answer.reason);
+            SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);
 
             if (simpleHttpResult.getCode().equals("ACCEPTED")) {
                 return new ApiRequests(data);
@@ -65,11 +54,11 @@ public abstract class ApiWorker {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServerConnectionException();
+            throw e;
         }
     }
 
-    public static ApiWorker registration(UserData data) throws Exception {
+    public static ApiWorker registration(UserData data) throws ServerConnectionException, IOException {
         RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
                 .url("http://localhost:8080/v1.0/")
@@ -83,12 +72,7 @@ public abstract class ApiWorker {
                 throw new IOException("Unexpected code " + response);
             }
 
-            if (response.body() == null) {
-                throw new IOException("No response");
-            }
-            String resp = response.body().string();
-            Answer answer = objectMapper.readValue(resp, Answer.class);
-            SimpleHttpResult simpleHttpResult = new SimpleHttpResult(answer.code, answer.reason);
+            SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);
             if (simpleHttpResult.getCode().equals("ACCEPTED")) {
                 return new ApiRequests(data);
             }
@@ -98,7 +82,7 @@ public abstract class ApiWorker {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServerConnectionException();
+            throw e;
         }
     }
 

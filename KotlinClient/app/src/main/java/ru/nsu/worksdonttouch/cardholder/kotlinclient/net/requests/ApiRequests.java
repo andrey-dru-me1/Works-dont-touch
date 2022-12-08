@@ -6,7 +6,6 @@ import okhttp3.*;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.exception.NotAuthorizedException;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.objects.ImageAnswer;
@@ -17,43 +16,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused"})
 public class ApiRequests extends ApiWorker {
     protected UserData user;
 
     private static final OkHttpClient client = new OkHttpClient();
-    private static ObjectMapper objectMapper = new ObjectMapper();
-
-    private class Answer {
-        public String code;
-        public String reason;
-
-    }
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public ApiRequests(UserData user) {
         this.user = user;
-    }
-
-    private SimpleHttpResult responseToHttp(Response response) throws IOException {
-        Answer answer = objectMapper.readValue(response.body().string(), Answer.class);
-        return new SimpleHttpResult(answer.code, answer.reason);
-    }
-
-    private boolean checkResponse(Response response) throws Exception {
-        if (!response.isSuccessful()) {
-            throw new IOException("Unexpected code " + response);
-        }
-        if (response.body() == null) {
-            throw new IOException("No response");
-        }
-        SimpleHttpResult simpleHttpResult = responseToHttp(response);
-
-        if (simpleHttpResult.getCode().equals("ACCEPTED")) {
-            return true;
-        }
-        else {
-            throw new NotAuthorizedException();
-        }
     }
 
     static String authorizationString(UserData data) {
@@ -65,34 +36,34 @@ public class ApiRequests extends ApiWorker {
     }
 
     @Override
-    public void changePassword(String password, HttpCallback<SimpleHttpResult> callback) throws Exception {
-        RequestBody formBody = new FormBody.Builder()
-                .build();
+    public void changePassword(String password, HttpCallback<SimpleHttpResult> callback) {
+        RequestBody formBody = new FormBody.Builder().build();
         Request request = new Request.Builder()
-                .url("http://localhost:8080/v1.0/")
-                .addHeader("Password", password)
                 .addHeader("Authorization", authorizationString(user))
+                .addHeader("Password", password)
+                .url("http://localhost:8080/v1.0/")
                 .post(formBody)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
-            SimpleHttpResult simpleHttpResult = responseToHttp(response);
+            SimpleHttpResult simpleHttpResult = objectMapper.readValue(response.body().string(), SimpleHttpResult.class);
             if (simpleHttpResult.getCode().equals("ACCEPTED")) {
-                callback.answer(HttpCallback.HttpResult.SUCCESSFUL, simpleHttpResult);
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), simpleHttpResult);
             }
             else {
-                // TODO
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void getCardList(double latitude, double longitude, HttpCallback<CardList> callback) throws Exception {
+    public void getCardList(double latitude, double longitude, HttpCallback<CardList> callback) {
         HttpUrl url = HttpUrl.parse("http://localhost:8080/v1.0/").newBuilder()
                 .addQueryParameter("latitude", latitude + "")
                 .addQueryParameter("longitude", longitude + "")
@@ -103,20 +74,20 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
             CardList cardList = objectMapper.readValue(response.body().string(), CardList.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, cardList);
-            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void getCard(long id, HttpCallback<Card> callback) throws Exception {
+    public void getCard(long id, HttpCallback<Card> callback) {
         HttpUrl url = HttpUrl.parse("http://localhost:8080/v1.0/").newBuilder()
                 .addQueryParameter("cardId", id + "")
                 .build();
@@ -126,20 +97,20 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
             Card card = objectMapper.readValue(response.body().string(), Card.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
-            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void editCard(Card card, HttpCallback<Card> callback) throws Exception {
+    public void editCard(Card card, HttpCallback<Card> callback) {
         RequestBody formBody = new FormBody.Builder()
                 .add("card", card.toString())
                 .build();
@@ -150,19 +121,19 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
-            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void addCard(Card card, HttpCallback<Card> callback) throws Exception {
+    public void addCard(Card card, HttpCallback<Card> callback) {
         RequestBody formBody = new FormBody.Builder()
                 .add("card", card.toString())
                 .build();
@@ -173,18 +144,19 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, card);
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void imageGet(long id, File toWrite, HttpCallback<File> callback) throws Exception {
+    public void imageGet(long id, File toWrite, HttpCallback<File> callback) {
         HttpUrl url = HttpUrl.parse("http://localhost:8080/v1.0/").newBuilder()
                 .addQueryParameter("imageId", id + "")
                 .build();
@@ -194,23 +166,24 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
-
             File file = null;
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, file);
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void uploadImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception {
+    public void uploadImage(File file, long id, HttpCallback<ImageAnswer> callback) {
         MultipartBody body = new MultipartBody.Builder()
                 .addFormDataPart("cardId", id + "")
-                .addFormDataPart("file", file.getName(), RequestBody.create(file, MediaType.parse("image/png")))
+                .addFormDataPart("file", file.getName(),
+                        RequestBody.create(file, MediaType.parse("image/png")))
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
@@ -219,24 +192,24 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
-
             ImageAnswer imageAnswer = objectMapper.readValue(response.body().string(), ImageAnswer.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, imageAnswer);
-            // TODO
 
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 
     @Override
-    public void editImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception {
+    public void editImage(File file, long id, HttpCallback<ImageAnswer> callback) {
         MultipartBody body = new MultipartBody.Builder()
                 .addFormDataPart("cardId", id + "")
-                .addFormDataPart("file", file.getName(), RequestBody.create(file, MediaType.parse("image/png")))
+                .addFormDataPart("file", file.getName(),
+                        RequestBody.create(file, MediaType.parse("image/png")))
                 .build();
         Request request = new Request.Builder()
                 .addHeader("Authorization", authorizationString(user))
@@ -245,17 +218,15 @@ public class ApiRequests extends ApiWorker {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!checkResponse(response)) {
-                callback.answer(HttpCallback.HttpResult.FAIL, null);
+            if (!response.isSuccessful()) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
-
             ImageAnswer imageAnswer = objectMapper.readValue(response.body().string(), ImageAnswer.class);
             callback.answer(HttpCallback.HttpResult.SUCCESSFUL, imageAnswer);
 
-            // TODO
-
         } catch (IOException e) {
             e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
 }

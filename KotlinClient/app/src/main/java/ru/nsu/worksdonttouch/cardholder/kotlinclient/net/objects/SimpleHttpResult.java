@@ -22,4 +22,12 @@ public class SimpleHttpResult {
     public String getReason() {
         return reason;
     }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
 }
