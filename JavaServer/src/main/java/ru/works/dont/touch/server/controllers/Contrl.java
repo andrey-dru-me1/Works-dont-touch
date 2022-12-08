@@ -2,16 +2,15 @@ package ru.works.dont.touch.server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import ru.works.dont.touch.server.entities.Image;
 import ru.works.dont.touch.server.entities.Location;
 import ru.works.dont.touch.server.entities.User;
+import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.repositories.ImageRepository;
 import ru.works.dont.touch.server.repositories.UserRepository;
 import ru.works.dont.touch.server.servicies.ImageService;
+import ru.works.dont.touch.server.servicies.UserService;
 import ru.works.dont.touch.server.servicies.LocationService;
 import ru.works.dont.touch.server.servicies.UserService;
 
@@ -42,19 +41,18 @@ public class Contrl {
     }
 
     @GetMapping(path="/all")
-    public @ResponseBody Iterable<Image> getAllUsers() {
-        System.out.println("HEllo\n");
+    public @ResponseBody User getUser(
+            @RequestParam(value = "id", required = true) long userId) {
         // This returns a JSON or XML with the users
-        return imageRepository.findAll();
+        try {
+            return userService.findUserByID(userId);
+        } catch (NotExistsException e) {
+            throw new RuntimeException(e);
+        }
     }
     @PostMapping(path="/del/all")
-    public @ResponseBody Iterable<User> delAllUsers() {
-        var users = userService.deleteAllUsers();
-        System.out.println(users);
-        for (User user : users) {
-            System.out.println(user);
-        }
-        return users;
+    public void delAllUsers() {
+        userService.deleteAllUsers();
     }
     @PostMapping(path="/del/loc")
     public @ResponseBody Iterable<Location> delAllLoc() {
