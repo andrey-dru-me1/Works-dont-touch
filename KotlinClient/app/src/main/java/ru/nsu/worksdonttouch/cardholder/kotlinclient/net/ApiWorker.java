@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static ru.nsu.worksdonttouch.cardholder.kotlinclient.net.requests.ApiRequests.authorizationString;
 
 
 public abstract class ApiWorker {
