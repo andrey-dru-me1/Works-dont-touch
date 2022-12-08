@@ -98,6 +98,8 @@ public abstract class ApiWorker {
 
     public abstract void getCardList(double latitude, double longitude, HttpCallback<CardList> callback);
 
+    public abstract void getCardList(HttpCallback<CardList> callback);
+
     public abstract void getCard(long id, HttpCallback<Card> callback);
 
     public abstract void editCard(Card card, HttpCallback<Card> callback);

@@ -1,5 +1,7 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
+import androidx.annotation.RequiresOptIn;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jetbrains.annotations.NotNull;
@@ -46,15 +48,23 @@ public class DataFileContainer {
 
     private final File userDataFile;
 
+    private final File tempDir;
+
     private final ObjectMapper mapper;
 
     private final AtomicInteger localCardNumber = new AtomicInteger();
 
     private final AtomicLong localImageNumber = new AtomicLong();
 
+    private final AtomicInteger tempFiles = new AtomicInteger();
+
     public DataFileContainer(File dir) throws NullPointerException, IOException {
         if (dir.mkdirs()) {
             logger.log(Level.INFO, "Create data directory");
+        }
+        this.tempDir = new File(dir, "temp");
+        if (this.tempDir.mkdirs()) {
+            logger.log(Level.INFO, "Create temp directory");
         }
         this.cardDir = new File(dir, "cards");
         if (this.cardDir .mkdirs()) {
@@ -84,11 +94,14 @@ public class DataFileContainer {
         loadCards();
     }
 
-    public Card save(@NotNull Card card) throws IOException {
+    public Card save(@NotNull Card card, boolean isSynchronized) throws IOException {
         if(card.getId() != null) {
             File f = new File(cardDir, card.getId() + ".json");
             mapper.writeValue(f, card);
             cards.put(card.getId(), card);
+            if (!isSynchronized) {
+                addCardToUpdate(card.getId());
+            }
             return card;
         } else {
             LocalCard localCard;
@@ -178,7 +191,7 @@ public class DataFileContainer {
         }
     }
 
-    private File getImageFile(long image, Card card) {
+    public File getImageFile(long image, Card card) {
         if (card instanceof LocalCard) {
             return new File(localImagesDir, Long.toString(image));
         } else {
@@ -212,6 +225,10 @@ public class DataFileContainer {
         cards.addAll(this.localCards.values().stream().map(LocalCard::clone).collect(Collectors.toList()));
         cards.addAll(updateSet.stream().map(aLong -> this.cards.get(aLong)).filter(Objects::nonNull).collect(Collectors.toList()));
         return cards;
+    }
+
+    public File getTempFile() {
+        return new File(tempDir, Integer.toString(tempFiles.incrementAndGet()));
     }
 
     public void clear() {

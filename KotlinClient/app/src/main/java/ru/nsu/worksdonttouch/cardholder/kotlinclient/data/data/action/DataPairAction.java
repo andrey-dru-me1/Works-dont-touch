@@ -10,7 +10,7 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutE
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 
-public abstract class DataAction<T, R, K> {
+public abstract class DataPairAction<T, R, L, K> {
 
     protected final static Logger logger = Logger.getLogger(DataController.class.getName());
 
@@ -20,19 +20,19 @@ public abstract class DataAction<T, R, K> {
     protected ApiWorker apiWorker;
 
 
-    public DataAction(DataController dataController, DataCallBack<T> callBack) {
+    public DataPairAction(DataController dataController, DataCallBack<T> callBack) {
         this.callBack = callBack;
         this.dataController = dataController;
         this.apiWorker = dataController.getApiWorker();
         this.dataFileContainer = dataController.getDataFileContainer();
     }
 
-    public void apply(R object) {
+    public void apply(R object1, L object2) {
         if (dataController.isOffline()) {
-            offlineRun(object);
+            offlineRun(object1, object2);
         } else {
             if (apiWorker != null) {
-                onlineRun(object);
+                onlineRun(object1, object2);
             } else {
                 runCallback(DataCallBack.DataStatus.WRONG_USER, null);
                 DataController.runEvent(new LogOutEvent(apiWorker.getUserData()));
@@ -40,9 +40,9 @@ public abstract class DataAction<T, R, K> {
         }
     }
 
-    protected abstract void onlineRun(R object);
+    protected abstract void onlineRun(R object1, L object2);
 
-    protected abstract void offlineRun(R object);
+    protected abstract void offlineRun(R object1, L object2);
 
     protected abstract void onSuccessful(K object);
 
