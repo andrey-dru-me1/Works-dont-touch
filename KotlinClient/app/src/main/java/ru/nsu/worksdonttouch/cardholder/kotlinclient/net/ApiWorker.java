@@ -3,10 +3,10 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.net;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.exception.NotAuthorizedException;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.CardList;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.exception.ServerConnectionException;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.objects.ImageAnswer;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.objects.SimpleHttpResult;

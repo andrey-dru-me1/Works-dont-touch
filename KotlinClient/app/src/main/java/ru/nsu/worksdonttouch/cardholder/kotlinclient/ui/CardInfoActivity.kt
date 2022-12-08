@@ -40,8 +40,8 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.bitmatrix.converter.BitMatrixConverter
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import java.io.File

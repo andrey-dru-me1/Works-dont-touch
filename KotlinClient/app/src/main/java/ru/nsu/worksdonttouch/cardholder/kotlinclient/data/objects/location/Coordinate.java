@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,20 +1,16 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.image;
-
-import android.os.FileUtils;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.image;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.DataPairAction;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.LocalCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.DataPairAction;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.LocalCard;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.objects.ImageAnswer;
 
 public class AddImage extends DataPairAction<File, Card, InputStream, ImageAnswer> {

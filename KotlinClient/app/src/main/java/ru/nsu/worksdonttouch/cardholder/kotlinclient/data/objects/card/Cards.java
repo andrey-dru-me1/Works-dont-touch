@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card;
 
 import java.util.List;
 

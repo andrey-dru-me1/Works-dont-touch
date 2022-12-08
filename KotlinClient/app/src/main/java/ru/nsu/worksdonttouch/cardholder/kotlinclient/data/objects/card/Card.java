@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -16,8 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Coordinate;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location;
 
 public class Card implements Parcelable {
 

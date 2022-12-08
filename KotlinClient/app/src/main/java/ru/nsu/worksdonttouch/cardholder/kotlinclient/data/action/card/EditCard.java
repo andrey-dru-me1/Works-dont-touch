@@ -1,30 +1,28 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.card;
 
 import java.io.IOException;
 import java.util.logging.Level;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.DataPairAction;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.LocalCard;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.DataAction;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent;
 
-public class CreateCard extends DataPairAction<Card, String, String, Card> {
+public class EditCard extends DataAction<Card, Card, Card> {
 
-    public CreateCard(DataController dataController, DataCallBack<Card> callBack) {
+    public EditCard(DataController dataController, DataCallBack<Card> callBack) {
         super(dataController, callBack);
     }
 
     @Override
-    protected void onlineRun(String object1, String object2) {
-        Card card = new Card(object1, object2, null, null);
-        apiWorker.addCard(card, this::httpReaction);
+    protected void onlineRun(Card object) {
+        apiWorker.editCard(object, this::httpReaction);
     }
 
     @Override
-    protected void offlineRun(String object1, String object2) {
-        notSynchronizedSave(new Card(object1, object1, null, null));
+    protected void offlineRun(Card object) {
+        notSynchronizedSave(object);
     }
 
     @Override
@@ -44,18 +42,17 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
 
     @Override
     protected void onNotFound(Card object) {
-        runCallback(DataCallBack.DataStatus.CANCELED, null);
+        notSynchronizedSave(object);
     }
 
     @Override
     protected void onNoConnection(Card object) {
-        dataController.startOffline();
         notSynchronizedSave(object);
     }
 
     @Override
     protected void onWrongRequest(Card object) {
-        logger.log(Level.WARNING, "wrong request for card create" + object);
+        logger.log(Level.WARNING, "wrong request for card edit" + object);
         runCallback(DataCallBack.DataStatus.CANCELED, null);
     }
 
@@ -65,11 +62,10 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
     }
 
     private void notSynchronizedSave(Card card) {
-        LocalCard localCard = new LocalCard(card.getName(), card.getBarcode(), card.getImages(), card.getLocations());
         try {
-            dataFileContainer.save(localCard, false);
-            runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, localCard);
-            DataController.runEvent(new CardAddEvent(localCard));
+            dataFileContainer.save(card, false);
+            runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, card);
+            DataController.runEvent(new CardChangeEvent(card));
         } catch (IOException e) {
             logger.log(Level.WARNING, "Card edit IOException ", e);
             runCallback(DataCallBack.DataStatus.CANCELED, null);
@@ -80,7 +76,6 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
         try {
             dataFileContainer.save(card, true);
             runCallback(DataCallBack.DataStatus.OK, card);
-            DataController.runEvent(new CardAddEvent(card));
         } catch (IOException e) {
             logger.log(Level.WARNING, "Card edit IOException ", e);
             runCallback(DataCallBack.DataStatus.CANCELED, null);

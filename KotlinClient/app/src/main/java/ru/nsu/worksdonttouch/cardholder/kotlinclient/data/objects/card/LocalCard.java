@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Coordinate;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location.Location;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location;
 
 public class LocalCard extends Card {
 

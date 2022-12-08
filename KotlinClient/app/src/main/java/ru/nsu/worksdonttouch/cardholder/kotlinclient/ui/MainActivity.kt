@@ -36,10 +36,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
 import java.io.File
 import java.util.*
@@ -54,7 +53,7 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
-        DataController.getInstance().getCards { _, data -> cards.addAll(data) }
+        DataController.getInstance().getCards { _, data -> cards.addAll(data.other) }
 
         val requestPermissionLauncher =
             registerForActivityResult(
