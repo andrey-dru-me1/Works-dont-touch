@@ -26,13 +26,13 @@ public class DataController {
 
     private static DataController instance;
 
-    private final Logger logger = Logger.getLogger(DataController.class.getName());
+    private final static Logger logger = Logger.getLogger(DataController.class.getName());
 
     private ApiWorker apiWorker = null;
 
     private final DataFileContainer dataFileContainer;
 
-    private final Map<Class<? extends Event>, List<ListenerEventRunner>> listenerMap = new ConcurrentHashMap<>();
+    private final static Map<Class<? extends Event>, List<ListenerEventRunner>> listenerMap = new ConcurrentHashMap<>();
 
     private DataController(File dir) throws IOException {
         dataFileContainer = new DataFileContainer(dir);
@@ -55,8 +55,10 @@ public class DataController {
     }
 
     public void createCard(Card card, DataCallBack<Card> callBack) throws IllegalStateException, Exception {
-        if (apiWorker == null)
+        if (apiWorker == null) {
             throw new IllegalStateException("Not authorized");
+
+        }
         apiWorker.addCard(card, (result, data) -> {
             switch (result) {
                 case FAIL:
@@ -75,7 +77,7 @@ public class DataController {
         //TODO: реализовать
     }
 
-    public void registerListener(@NotNull EventListener eventListener) {
+    public static void registerListener(@NotNull EventListener eventListener) {
         Class<?> clazz = eventListener.getClass();
         while (!clazz.isPrimitive()) {
             for(Method m : clazz.getMethods()) {
@@ -89,13 +91,13 @@ public class DataController {
         }
     }
 
-    public void unregisterListener(@NotNull EventListener eventListener) {
+    public static void unregisterListener(@NotNull EventListener eventListener) {
         listenerMap.forEach((clazz, listener) -> {
             listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
         });
     }
 
-    private void runEvent(@NotNull Event event) {
+    private static void runEvent(@NotNull Event event) {
         for(ListenerEventRunner runner : listenerMap.get(event.getClass())) {
             try {
                 runner.run(event);
