@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@SuppressWarnings("unused")
+
 public abstract class ApiWorker {
     private static final OkHttpClient client = new OkHttpClient();
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -86,27 +86,27 @@ public abstract class ApiWorker {
         }
     }
 
-    public abstract void changePassword(String password, HttpCallback<SimpleHttpResult> callback) throws Exception;
+    public abstract void changePassword(String password, HttpCallback<SimpleHttpResult> callback);
 
-    public abstract void getCardList(double latitude, double longitude, HttpCallback<CardList> callback) throws Exception;
+    public abstract void getCardList(double latitude, double longitude, HttpCallback<CardList> callback);
 
-    public abstract void getCard(long id, HttpCallback<Card> callback) throws Exception;
+    public abstract void getCard(long id, HttpCallback<Card> callback);
 
-    public abstract void editCard(Card card, HttpCallback<Card> callback) throws Exception;
+    public abstract void editCard(Card card, HttpCallback<Card> callback);
 
     /**
      * TODO: Нужно создать новый объект не содержащий id карты для отправки запроса
      * **/
-    public abstract void addCard(Card card, HttpCallback<Card> callback) throws Exception;
+    public abstract void addCard(Card card, HttpCallback<Card> callback);
 
     /**
      * Возвращает в callback файл toWrite если все прошло успешно
      * **/
-    public abstract void imageGet(long id, File toWrite, HttpCallback<File> callback) throws Exception;
+    public abstract void imageGet(long id, File toWrite, HttpCallback<File> callback);
 
-    public abstract void uploadImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception;
+    public abstract void uploadImage(File file, long id, HttpCallback<ImageAnswer> callback);
 
-    public abstract void editImage(File file, long id, HttpCallback<ImageAnswer> callback) throws Exception;
+    public abstract void editImage(File file, long id, HttpCallback<ImageAnswer> callback);
     
     public abstract UserData getUserData();
 

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@SuppressWarnings({"unused"})
 public class ApiRequests extends ApiWorker {
     protected UserData user;
 
@@ -228,5 +227,10 @@ public class ApiRequests extends ApiWorker {
             e.printStackTrace();
             callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
+    }
+
+    @Override
+    public UserData getUserData() {
+        return user;
     }
 }
