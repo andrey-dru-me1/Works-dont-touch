@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
+import ru.works.dont.touch.server.rest.map.TwoGisService;
 import ru.works.dont.touch.server.servicies.ImageService;
 import ru.works.dont.touch.server.servicies.UserService;
 
@@ -26,6 +27,8 @@ public class MainController {
     private UserService userService;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    TwoGisService twoGisService;
 
     @PostMapping(path = "/ad") // Map ONLY POST Requests
     public @ResponseBody String addNewUser() {
@@ -86,9 +89,9 @@ public class MainController {
 
     @GetMapping(path = "/img")
     public @ResponseBody HttpStatusCode image() {
-        byte[] info = {1,2,3,125,5,125,5,4,5,6,2};
+        byte[] info = {1, 2, 3, 125, 5, 125, 5, 4, 5, 6, 2};
         try {
-            var img = imageService.saveImage((Long) (long)25);
+            var img = imageService.saveImage((Long) (long) 25);
             imageService.saveImageInMemory(img, new ByteArrayInputStream(info));
         } catch (NotExistsException e) {
             throw new RuntimeException(e);
@@ -97,9 +100,16 @@ public class MainController {
         }
         return HttpStatusCode.valueOf(200);
     }
+
     @GetMapping(path = "/imgs")
     public @ResponseBody List<URI> images() {
 
-        return imageService.getUrisByCardId((long)25);
+        return imageService.getUrisByCardId((long) 25);
     }
+
+    @GetMapping(path = "/post")
+    public void getCard() {
+
+    }
+
 }
