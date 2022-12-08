@@ -150,14 +150,19 @@ public class TwoGisService implements MapService {
                 .build();
         System.out.println(url);
 
+
         Request request = new Request.Builder()
                 .url(url)
                 .get()
                 .build();
+        ObjectMapper mapper = new ObjectMapper();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
             assert response.body() != null;
+            var reqRes = response.body().string();
+
+
+
             System.out.println(response.body().string());
         } catch (IOException e) {
             e.printStackTrace();
