@@ -1,6 +1,5 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.net;
 
-import android.os.Build;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
@@ -23,11 +22,7 @@ public abstract class ApiWorker {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     static String authorizationString(UserData data) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return "Basic " + new String(Base64.getEncoder()
-                    .encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
-        }
-        return null;
+        return new String(Base64.getEncoder().encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
     }
 
     public static ApiWorker authTest(UserData data) throws IOException, NotAuthorizedException, NullPointerException {
