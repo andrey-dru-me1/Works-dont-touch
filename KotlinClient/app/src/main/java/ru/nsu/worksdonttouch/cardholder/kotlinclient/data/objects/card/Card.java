@@ -141,4 +141,9 @@ public class Card implements Parcelable {
         dest.writeList(images);
         dest.writeList(locations);
     }
+
+    @Override
+    public boolean equals(Object object) {
+        return (object instanceof Card) && ((Card)object).getId().equals(id);
+    }
 }

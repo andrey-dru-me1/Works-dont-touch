@@ -57,4 +57,9 @@ public class LocalCard extends Card {
         return new LocalCard(localID, name, barcode,  new ArrayList<>(images), locations.stream().map(Location::clone).collect(Collectors.toList()));
     }
 
+    @Override
+    public boolean equals(Object object) {
+        return (object instanceof LocalCard) && ((LocalCard)object).getLocalID().equals(localID);
+    }
+
 }

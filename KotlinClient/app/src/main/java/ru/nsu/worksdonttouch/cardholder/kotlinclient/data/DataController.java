@@ -4,6 +4,7 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 import org.jetbrains.annotations.NotNull;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.image.GetImage;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.card.CreateCard;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.card.EditCard;
@@ -110,7 +111,28 @@ public class DataController {
     }
 
     public void deleteCard(Card card, DataCallBack<Card> callBack) {
-        //TODO: write
+        if (isOffline || apiWorker == null) {
+            if (card instanceof LocalCard) {
+                try {
+                    dataFileContainer.deleteCard(card);
+                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    runEvent(new CardRemoveEvent(card));
+                } catch (Exception e) {
+                    runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                }
+            } else {
+                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+            }
+        } else {
+            apiWorker.deleteCard(card, (result, data) -> {
+                if(result == HttpCallback.HttpResult.SUCCESSFUL) {
+                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    runEvent(new CardRemoveEvent(card));
+                } else {
+                    runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                }
+            });
+        }
     }
 
     public void getImage(Card card, long id, DataCallBack<File> callBack) {
@@ -212,11 +234,11 @@ public class DataController {
             for (Card card : dataFileContainer.getUpdateList()) {
                 if (card instanceof LocalCard) {
                     apiWorker.addCard(new Card(card.getName(), card.getBarcode(), null, null), (result, data) -> {
-                        if(data != null) {
+                        if (data != null) {
                             try {
                                 dataFileContainer.save(data, true);
                                 apiWorker.editCard(card, (result1, data1) -> {
-                                    if(data1 != null) {
+                                    if (data1 != null) {
                                         try {
                                             dataFileContainer.save(data1, true);
                                         } catch (Exception e) {
@@ -231,7 +253,7 @@ public class DataController {
                     });
                 } else {
                     apiWorker.editCard(card, (result, data) -> {
-                        if(data != null) {
+                        if (data != null) {
                             try {
                                 dataFileContainer.save(data, true);
                             } catch (Exception e) {

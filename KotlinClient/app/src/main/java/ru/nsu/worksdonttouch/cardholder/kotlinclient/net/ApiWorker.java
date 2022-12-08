@@ -101,6 +101,8 @@ public abstract class ApiWorker {
 
     public abstract void getCard(long id, HttpCallback<Card> callback);
 
+    public abstract void deleteCard(Card card, HttpCallback<Card> callback);
+
     public abstract void editCard(Card card, HttpCallback<Card> callback);
 
     /**
