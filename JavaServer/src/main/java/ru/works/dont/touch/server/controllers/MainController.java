@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import ru.works.dont.touch.server.entities.Card;
 import ru.works.dont.touch.server.entities.User;
 import ru.works.dont.touch.server.exceptions.ExistsException;
 import ru.works.dont.touch.server.exceptions.NotExistsException;
 import ru.works.dont.touch.server.rest.map.TwoGisService;
+import ru.works.dont.touch.server.servicies.CardService;
 import ru.works.dont.touch.server.servicies.ImageService;
 import ru.works.dont.touch.server.servicies.UserService;
 
@@ -27,6 +29,8 @@ public class MainController {
     private UserService userService;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private CardService cardService;
     @Autowired
     TwoGisService twoGisService;
 
@@ -50,6 +54,11 @@ public class MainController {
     public @ResponseBody Iterable<User> getAllUsers() {
         // This returns a JSON or XML with the users
         return userService.findAll();
+    }
+    @GetMapping(path = "/all/cards")
+    public @ResponseBody Iterable<Card> getAllCards() {
+        // This returns a JSON or XML with the users
+        return cardService.findAll();
     }
 
     @GetMapping(path = "/up")
