@@ -226,6 +226,7 @@ public class DataController {
                 cards.getOther().add(localCard);
             }
         }
+        cards.getSortedCards().sort((o1, o2) -> (int) (o1.getDistance() - o2.getDistance()));
         return cards;
     }
 
