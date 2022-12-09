@@ -114,11 +114,11 @@ class AddCardActivity : ComponentActivity() {
             val stream = ByteArrayOutputStream()
             bitmap?.compress(Bitmap.CompressFormat.PNG,0,stream)
 
-            var card: Card? = null
 
-            DataController.getInstance().createCard(cardName, barCode) { _, data -> card = data }
-
-            DataController.getInstance().addImage(card, ByteArrayInputStream(stream.toByteArray())) { _, _ -> }
+            DataController.getInstance().createCard(cardName, barCode) { _, data ->
+                DataController.getInstance().addImage(data, ByteArrayInputStream(stream.toByteArray())) { _, _ ->
+                }
+            }
 
             finish()
         }) {

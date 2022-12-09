@@ -110,14 +110,14 @@ public class DataController {
         new Thread( () -> {
             CreateCard createCard = new CreateCard(this, callBack);
             createCard.apply(name, barcode);
-        });
+        }).start();
     }
 
     public void editCard(Card card, DataCallBack<Card> callBack) {
         new Thread( () -> {
             EditCard editCard = new EditCard(this, callBack);
             editCard.apply(card);
-        });
+        }).start();
     }
 
     public void deleteCard(Card card, DataCallBack<Card> callBack) {
@@ -142,21 +142,21 @@ public class DataController {
                     }
                 });
             }
-        });
+        }).start();
     }
 
     public void getImage(Card card, long id, DataCallBack<File> callBack) {
         new Thread( () -> {
             GetImage getImage = new GetImage(this, callBack);
             getImage.apply(card, id);
-        });
+        }).start();
     }
 
     public void addImage(Card card, InputStream inputStream, DataCallBack<File> callBack) {
         new Thread( () -> {
             AddImage addImage = new AddImage(this, callBack);
             addImage.apply(card, inputStream);
-        });
+        }).start();
     }
 
     public void getCards(DataCallBack<Cards> callBack) {
@@ -197,7 +197,7 @@ public class DataController {
                     }
                 });
             }
-        });
+        }).start();
     }
 
     public void getCards(DataCallBack<Cards> callBack, double latitude, double longitude) {
@@ -216,7 +216,7 @@ public class DataController {
                     }
                 });
             }
-        });
+        }).start();
     }
 
     private Cards generateCards(@NotNull CardList list) {

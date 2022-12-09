@@ -47,7 +47,7 @@ class EditCardActivity : ComponentActivity() {
                     Column {
                         val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }   //get current image
                         DataController.getInstance().getImage(card, card?.images?.get(0)
-                            ?: 0) { _, data -> bitmap.value = BitmapFactory.decodeFile(data.absolutePath) }
+                            ?: 0) { _, data -> runOnUiThread { bitmap.value = BitmapFactory.decodeFile(data.absolutePath) } }
 
                         val launcher = rememberLauncherForActivityResult(
                             ActivityResultContracts.TakePicturePreview()

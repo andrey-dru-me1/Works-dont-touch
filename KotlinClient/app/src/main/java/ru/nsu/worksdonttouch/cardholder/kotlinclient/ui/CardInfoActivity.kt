@@ -85,7 +85,7 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                         var cardPreview: File? = null
                         if((images.size) > 0) {
                             DataController.getInstance()
-                                .getImage(card, images[0]) { _, file -> cardPreview = file }
+                                .getImage(card, images[0]) { _, file -> runOnUiThread { cardPreview = file } }
                         }
                         Image(
                             painter = rememberAsyncImagePainter(model = cardPreview),
@@ -124,7 +124,7 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                             images.map {
                                 var image: File? = null
                                 DataController.getInstance()
-                                    .getImage(card, it) { _, file -> image = file }
+                                    .getImage(card, it) { _, file -> runOnUiThread { image = file } }
                                 Image(
                                     painter = rememberAsyncImagePainter(model = image),
                                     contentDescription = name
@@ -182,10 +182,12 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
     @EventHandler
     fun changeCardEvent(event: CardChangeEvent) {
-        name = event.card.name
-        barcode = event.card.barcode ?: ""
-        images = event.card.images
-        locations = event.card.locations
+        runOnUiThread {
+            name = event.card.name
+            barcode = event.card.barcode ?: ""
+            images = event.card.images
+            locations = event.card.locations
+        }
     }
 
 }

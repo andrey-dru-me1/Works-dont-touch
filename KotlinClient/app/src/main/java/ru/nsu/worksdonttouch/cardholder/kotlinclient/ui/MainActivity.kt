@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack.DataStatus
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
@@ -92,7 +93,10 @@ class MainActivity : ComponentActivity(), EventListener {
     }
 
     private fun update() {
-        DataController.getInstance().getCards { _, data -> cards.value = data }
+//        DataController.getInstance().getCards { _, data -> runOnUiThread { cards.value = data } }
+        DataController.getInstance().getCards {_, data ->
+
+        }
     }
 
     @EventHandler
@@ -171,8 +175,50 @@ class MainActivity : ComponentActivity(), EventListener {
         }
     }
 
+//    @Composable
+//    fun CardView(card : Card) {
+//        val image: MutableState<File?> =
+//            remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
+//        if (card.images.size > 0) {
+//            DataController.getInstance()
+//                .getImage(card, card.images[0], this::CardView)
+//        }
+//    }
+
     @Composable
-    fun CardView(card: Card) {
+    fun CardView(card: DataStatus) {
+
+        val mContext = LocalContext.current
+        val image: MutableState<File?> =
+            remember { mutableStateOf(null) }
+        image.value = file
+
+        IconButton(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(3.5.dp),
+            onClick = {
+                val intent = Intent(mContext, CardInfoActivity::class.java)
+                intent.putExtra("card", card)
+                mContext.startActivity(intent)
+            },
+        ) {
+            Box {
+                Image(
+                    painter = rememberAsyncImagePainter(model = image.value),
+                    contentDescription = card.name,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .aspectRatio((86.0 / 54).toFloat())
+                        .clip(RoundedCornerShape(10.dp))
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun CardView(card: Card, image : MutableState<File?>) {
 
         val mContext = LocalContext.current
 
@@ -187,12 +233,6 @@ class MainActivity : ComponentActivity(), EventListener {
             },
         ) {
             Box {
-                val image: MutableState<File?> =
-                    remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-                if (card.images.size > 0) {
-                    DataController.getInstance()
-                        .getImage(card, card.images[0]) { _, file -> image.value = file }
-                }
                 Image(
                     painter = rememberAsyncImagePainter(model = image.value),
                     contentDescription = card.name,
