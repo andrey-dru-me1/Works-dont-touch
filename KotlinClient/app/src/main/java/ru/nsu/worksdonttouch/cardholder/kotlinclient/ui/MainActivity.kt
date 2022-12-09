@@ -1,7 +1,6 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,9 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.location.LocationManagerCompat.getCurrentLocation
-import androidx.core.location.LocationManagerCompat.isLocationEnabled
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
@@ -31,8 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        var res : Location? = null
-        res = getCurrentLocation()
+        var res : Location? = getCurrentLocation()
         if (res != null) {
             Toast.makeText(this, "" + res.latitude + " " + res.longitude, Toast.LENGTH_SHORT).show()
             tvLatitude.text = "" + res.latitude
@@ -43,8 +38,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getCurrentLocation() : Location? {
-        var res : Location? = null
+    private fun getCurrentLocation() {
         if (checkPermissions()) {
             if (isLocationEnabled()) {
                 if (ActivityCompat.checkSelfPermission(
@@ -56,9 +50,7 @@ class MainActivity : AppCompatActivity() {
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     requestPermission()
-                    return null
                 }
-                var a : Location? = null
                 fusedLocationProviderClient.lastLocation.addOnCompleteListener(this) { task ->
                     val location : Location? = task.result
                     if (location == null) {
@@ -66,13 +58,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     else {
                         Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
-                        res = location
-//                        tvLatitude.text = "" + location.latitude
-//                        tvLongitude.text = "" + location.longitude
                     }
-                    res = location
+                    onLocation(location)
                 }
-                return res
             }
             else {
                 Toast.makeText(this, "Turn on location", Toast.LENGTH_SHORT).show()
@@ -83,7 +71,11 @@ class MainActivity : AppCompatActivity() {
         else {
             requestPermission()
         }
-        return res
+        onLocation(null)
+    }
+
+    fun onLocation(location  : Location?) {
+
     }
 
     private fun isLocationEnabled() : Boolean {
