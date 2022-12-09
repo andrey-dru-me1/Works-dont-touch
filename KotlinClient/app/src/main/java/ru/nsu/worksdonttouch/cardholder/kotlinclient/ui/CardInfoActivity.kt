@@ -59,10 +59,11 @@ class CardInfoActivity : ComponentActivity() {
             KotlinClientTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
-                    val card: Card = intent.getParcelableExtra("card")!!
+                    val cardHelper: Card? = intent.getSerializableExtra("card") as Card?
+                    if(cardHelper == null) finish()
+                    val card: Card = cardHelper!!
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
                     var selectedLocation: Location? = null
@@ -71,7 +72,7 @@ class CardInfoActivity : ComponentActivity() {
 
                         //Main card image (face side)
                         Image(
-                            painter = rememberAsyncImagePainter(model = card.images[0]),
+                            painter = rememberAsyncImagePainter(model = if (card.images.size  > 0) card.images[0] else null),
                             contentDescription = "Card preview",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
@@ -118,21 +119,18 @@ class CardInfoActivity : ComponentActivity() {
                         Text("Locations:")
                         Column {
                             card.locations.map {
-                                ClickableText(
-                                    text = AnnotatedString(it.name),
+                                ClickableText(text = AnnotatedString(it.name),
                                     style = TextStyle(color = Color.Blue),
                                     onClick = { _ ->
                                         selectedLocation = it
                                         openDialog.value = true
-                                    }
-                                )
+                                    })
                             }
                         }
 
                     }
                     Box(contentAlignment = Alignment.BottomEnd) {
-                        Button(
-                            shape = CircleShape,
+                        Button(shape = CircleShape,
                             modifier = Modifier
                                 .padding(15.dp)
                                 .size(60.dp),
@@ -141,8 +139,7 @@ class CardInfoActivity : ComponentActivity() {
                                     Intent(this@CardInfoActivity, EditCardActivity::class.java)
                                 intent.putExtra("card", card)
                                 startActivity(intent)
-                            }
-                        ) {
+                            }) {
                             Image(
                                 painter = painterResource(id = R.drawable.pen),
                                 contentDescription = "Edit card"
@@ -171,11 +168,9 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
             .background(Color.Black.copy(alpha = 0.6f))
             .padding(35.dp, 80.dp)
     ) {
-        Popup(
-            properties = PopupProperties(focusable = true),
+        Popup(properties = PopupProperties(focusable = true),
             alignment = Alignment.Center,
-            onDismissRequest = { close() }
-        ) {
+            onDismissRequest = { close() }) {
             Box(
                 modifier = Modifier
                     .size(maxWidth, maxHeight)
@@ -186,12 +181,11 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                 val latitude = remember { mutableStateOf("") }
                 val longitude = remember { mutableStateOf("") }
 
-                val coors: SnapshotStateList<Coordinate?> =
-                    remember {
-                        val res = mutableStateListOf<Coordinate?>()
-                        res.addAll(localLocation.coordinates)
-                        res
-                    }
+                val coors: SnapshotStateList<Coordinate?> = remember {
+                    val res = mutableStateListOf<Coordinate?>()
+                    res.addAll(localLocation.coordinates)
+                    res
+                }
 
                 Column {
 
@@ -222,8 +216,7 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                     onClick = {
                         coors.add(
                             Coordinate(
-                                latitude.value.toDouble(),
-                                longitude.value.toDouble()
+                                latitude.value.toDouble(), longitude.value.toDouble()
                             )
                         )
                         longitude.value = ""
@@ -242,7 +235,8 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                     onClick = {
                         location.coordinates = localLocation.coordinates
                         close()
-                    }, modifier = Modifier
+                    },
+                    modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(30.dp, 20.dp)
                         .clip(CircleShape)
@@ -260,11 +254,8 @@ fun CoordinateField(text: MutableState<String>) {
         value = text.value,
         onValueChange = { text.value = it },
         singleLine = true,
-        modifier = Modifier
-            .border(
-                2.dp,
-                Color.LightGray,
-                RoundedCornerShape(5.dp)
+        modifier = Modifier.border(
+                2.dp, Color.LightGray, RoundedCornerShape(5.dp)
             )
     )
 }
@@ -276,18 +267,13 @@ fun DefaultPreview2() {
         val location = remember {
             mutableStateOf(
                 Location(
-                    "Быстроном",
-                    true,
-                    listOf(Coordinate(15.0, 20.0))
+                    "Быстроном", true, listOf(Coordinate(15.0, 20.0))
                 )
             )
         }
         val flag = remember { mutableStateOf(true) }
         if (flag.value) {
-            EditCoordinatesFragment(
-                location = location.value,
-                close = { flag.value = false }
-            )
+            EditCoordinatesFragment(location = location.value, close = { flag.value = false })
         }
         Button(onClick = { flag.value = true }, Modifier.wrapContentSize()) {
 

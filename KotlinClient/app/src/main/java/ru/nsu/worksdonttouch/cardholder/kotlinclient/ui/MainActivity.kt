@@ -36,8 +36,10 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
@@ -77,15 +79,17 @@ class MainActivity : ComponentActivity(), EventListener {
                 }
             }
         }
-        DataController.registerListener(this);
+        DataController.registerListener(this)
     }
 
-//    override fun update(update: Update) {
-//        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
-//            cards.clear()
-//            cards.addAll(DataController.getInstance().cards)
-//        }
-//    }
+    private fun update() {
+        DataController.getInstance().getCards { _, data -> cards.value = data }
+    }
+
+    @EventHandler
+    fun addCardEvent(event : CardAddEvent) {
+        update()
+    }
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -96,7 +100,8 @@ class MainActivity : ComponentActivity(), EventListener {
         fun refresh() = refreshScope.launch {
             refreshing = true
             //TODO: Try connecting to a server and synchronize all the data
-            delay(1500)
+            update()
+            delay(500)
             refreshing = false
         }
 
@@ -164,8 +169,10 @@ class MainActivity : ComponentActivity(), EventListener {
         {
             Box {
                 val image: MutableState<File?> = remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-                DataController.getInstance()
-                    .getImage(card, card.images[0]) { _, file -> image.value = file}
+                if(card.images.size > 0) {
+                    DataController.getInstance()
+                        .getImage(card, card.images[0]) { _, file -> image.value = file }
+                }
                 Image(
                     painter = rememberAsyncImagePainter(model = image),
                     contentDescription = card.name,

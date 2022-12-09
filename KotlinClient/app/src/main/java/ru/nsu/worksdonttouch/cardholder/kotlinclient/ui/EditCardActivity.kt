@@ -29,7 +29,7 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class EditCardActivity : ComponentActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,7 +40,7 @@ class EditCardActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
 
-                    val card: Card? = intent.getParcelableExtra<Card>("card")
+                    val card: Card? = intent.getSerializableExtra("card", Card::class.java)
 
                     //TODO: delete file
 
@@ -108,7 +108,6 @@ class EditCardActivity : ComponentActivity() {
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun SaveButton(card: Card?) {
         Button(onClick = {
