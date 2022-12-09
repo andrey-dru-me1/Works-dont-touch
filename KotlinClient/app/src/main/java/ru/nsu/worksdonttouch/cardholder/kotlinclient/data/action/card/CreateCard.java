@@ -23,7 +23,7 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
 
     @Override
     protected void offlineRun(String object1, String object2) {
-        notSynchronizedSave(new Card(object1, object1, null, null));
+        notSynchronizedSave(new Card(object1, object2, null, null));
     }
 
     @Override

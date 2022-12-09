@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class AuthorisationActivity : ComponentActivity() {
@@ -65,13 +67,14 @@ class AuthorisationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        //TODO: set user globally
-//        DataController.getInstance().user = User(
-//            login = login,
-//            password = password,
-//            token = Random(System.currentTimeMillis()).toString()
-//        )
-        startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+        Thread {
+            DataController.getInstance().loginUser(UserData(login, password))
+            if (!DataController.getInstance().isOffline) {
+                runOnUiThread {
+                    startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+                }
+            }
+        }.start()
     }
 
 }

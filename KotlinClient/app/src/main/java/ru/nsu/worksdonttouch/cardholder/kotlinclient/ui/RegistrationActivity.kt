@@ -2,6 +2,7 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class RegistrationActivity : ComponentActivity() {
@@ -70,7 +72,18 @@ class RegistrationActivity : ComponentActivity() {
 
     private fun onSaveButtonClick(login: String, password: String) {
         //TODO: register new user
-        startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
+        Thread {
+            DataController.getInstance().registerUser(UserData(login, password))
+            if (!DataController.getInstance().isOffline) {
+                runOnUiThread {
+                    startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
+                }
+            } else {
+                runOnUiThread{
+                    Toast.makeText(this, "Can't establish connection. Try again later", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
     }
 
     @Composable

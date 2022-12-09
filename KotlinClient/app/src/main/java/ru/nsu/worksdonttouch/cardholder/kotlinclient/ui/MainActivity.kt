@@ -47,6 +47,8 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
 import java.util.*
 
+var flag: Boolean = true
+
 class MainActivity : ComponentActivity(), EventListener {
 
     private val cards: MutableState<Cards?> = mutableStateOf(null)
@@ -57,6 +59,13 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
+        if(flag) {
+            val intent = Intent(this, AuthorisationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            flag = false
+        }
+
         update()
         DataController.getInstance().startOffline()
 
@@ -66,6 +75,7 @@ class MainActivity : ComponentActivity(), EventListener {
             ) {}
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        requestPermissionLauncher.launch(Manifest.permission.INTERNET)
 
         setContent {
             KotlinClientTheme {

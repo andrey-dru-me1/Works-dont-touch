@@ -67,7 +67,7 @@ public class DataController {
         return instance;
     }
 
-    private void loginUser(UserData user) throws Exception {
+    public void loginUser(UserData user) throws Exception {
         try {
             apiWorker = ApiWorker.authTest(user);
             if (apiWorker != null) {
@@ -82,7 +82,7 @@ public class DataController {
         }
     }
 
-    private void registerUser(UserData user) throws Exception {
+    public void registerUser(UserData user) throws Exception {
         try {
             apiWorker = ApiWorker.registration(user);
             if (apiWorker != null) {
