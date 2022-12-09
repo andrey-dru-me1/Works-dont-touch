@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack.DataStatus
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
@@ -44,7 +44,8 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAdd
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.objects.ShowCards
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.objects.SortedCardWithImage
 import java.io.File
 import java.util.*
 
@@ -52,7 +53,7 @@ private var isStarted = false;
 
 class MainActivity : ComponentActivity(), EventListener {
 
-    private val cards: MutableState<Cards?> = mutableStateOf(null)
+    private val cards: MutableState<ShowCards?> = mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,8 +94,15 @@ class MainActivity : ComponentActivity(), EventListener {
     }
 
     private fun update() {
-//        DataController.getInstance().getCards { _, data -> runOnUiThread { cards.value = data } }
-        DataController.getInstance().getCards {_, data ->
+        DataController.getInstance().getCards { _, data -> runOnUiThread { cards.value = ShowCards(data) } }
+        cards.value?.sortedCards?.map { card ->
+            card.card.images.map { imageid ->
+                DataController.getInstance().getImage(card.card, imageid) { _, data ->
+                    runOnUiThread {
+                        card.image = data
+                    }
+                }
+            }
 
         }
     }
@@ -116,7 +124,7 @@ class MainActivity : ComponentActivity(), EventListener {
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun CardsGrid(cards: MutableState<Cards?>) {
+    fun CardsGrid(cards: MutableState<ShowCards?>) {
         val refreshScope = rememberCoroutineScope()
         var refreshing by remember { mutableStateOf(false) }
 
@@ -145,8 +153,8 @@ class MainActivity : ComponentActivity(), EventListener {
                 columns = GridCells.Fixed(2),
             ) {
                 cards.value?.sortedCards?.sortedBy { it.distance }
-                    ?.map { item { CardView(it.card) } }
-                cards.value?.other?.map { item { CardView(it) } }
+                    ?.map { item { CardView(it.card, it.image) } }
+                cards.value?.other?.map { item { CardView(it.card, it.image  ) } }
             }
 
             //Spinning round
@@ -175,23 +183,9 @@ class MainActivity : ComponentActivity(), EventListener {
         }
     }
 
-//    @Composable
-//    fun CardView(card : Card) {
-//        val image: MutableState<File?> =
-//            remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-//        if (card.images.size > 0) {
-//            DataController.getInstance()
-//                .getImage(card, card.images[0], this::CardView)
-//        }
-//    }
-
     @Composable
-    fun CardView(card: DataStatus) {
-
+    fun CardView(card : Card) {
         val mContext = LocalContext.current
-        val image: MutableState<File?> =
-            remember { mutableStateOf(null) }
-        image.value = file
 
         IconButton(
             modifier = Modifier
@@ -205,7 +199,7 @@ class MainActivity : ComponentActivity(), EventListener {
         ) {
             Box {
                 Image(
-                    painter = rememberAsyncImagePainter(model = image.value),
+                    painter = rememberAsyncImagePainter(model = null),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
@@ -217,10 +211,46 @@ class MainActivity : ComponentActivity(), EventListener {
         }
     }
 
+//    @Composable
+//    fun CardView(card: DataStatus) {
+//
+//        val mContext = LocalContext.current
+//        val image: MutableState<File?> =
+//            remember { mutableStateOf(null) }
+//        image.value = file
+//
+//        IconButton(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(3.5.dp),
+//            onClick = {
+//                val intent = Intent(mContext, CardInfoActivity::class.java)
+//                intent.putExtra("card", card)
+//                mContext.startActivity(intent)
+//            },
+//        ) {
+//            Box {
+//                Image(
+//                    painter = rememberAsyncImagePainter(model = image.value),
+//                    contentDescription = card.name,
+//                    contentScale = ContentScale.FillWidth,
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .aspectRatio((86.0 / 54).toFloat())
+//                        .clip(RoundedCornerShape(10.dp))
+//                )
+//            }
+//        }
+//    }
+
     @Composable
-    fun CardView(card: Card, image : MutableState<File?>) {
+    fun CardView(card: Card, file : File?) {
 
         val mContext = LocalContext.current
+
+        val image: MutableState<File?> =
+            remember { mutableStateOf(null) }
+        image.value = file
 
         IconButton(
             modifier = Modifier

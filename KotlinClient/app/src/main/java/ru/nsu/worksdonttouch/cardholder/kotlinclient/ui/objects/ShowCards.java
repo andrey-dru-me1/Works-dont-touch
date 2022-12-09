@@ -1,39 +1,30 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.objects;
 
-import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.SortedCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards;
 
 public class ShowCards {
 
-    private final List<SortedCard> sortedCards;
-    private final List<Card> other;
-    private final List<File> sortedCardsImages;
-    private final List<File> otherImages;
+    private final List<SortedCardWithImage> sortedCards;
+    private final List<CardWithImage> other;
 
-    public ShowCards(List<SortedCard> sortedCards, List<Card> other, List<File> sortedCardsImages, List<File> otherImages) {
-        this.sortedCards = sortedCards;
-        this.other = other;
-        this.sortedCardsImages = sortedCardsImages;
-        this.otherImages = otherImages;
+    public ShowCards(List<SortedCardWithImage> sortedCards1, List<CardWithImage> other1) {
+        this.sortedCards = sortedCards1;
+        this.other = other1;
     }
 
-    public List<SortedCard> getSortedCards() {
+    public ShowCards(Cards cards) {
+        this.sortedCards = cards.getSortedCards().stream().map(a -> new SortedCardWithImage(a.getCard(), a.getDistance(), null)).collect(Collectors.toList());
+        this.other = cards.getSortedCards().stream().map(a -> new CardWithImage(a.getCard(), null)).collect(Collectors.toList());
+    }
+
+    public List<SortedCardWithImage> getSortedCards() {
         return sortedCards;
     }
 
-    public List<Card> getOther() {
+    public List<CardWithImage> getOther() {
         return other;
     }
-
-    public List<File> getSortedImageFiles() {
-        return sortedCardsImages;
-    }
-
-    public List<File> getOtherImageFiles() {
-        return otherImages;
-    }
-
 }
