@@ -54,7 +54,10 @@ import java.util.*
 
 class CardInfoActivity : ComponentActivity(), EventListener {
 
-    private var currentCard: Card? by mutableStateOf(null)
+    private var name: String by mutableStateOf("")
+    private var barcode: String by mutableStateOf("")
+    private var images: List<Long> by mutableStateOf(listOf())
+    private var locations: List<Location> by mutableStateOf(listOf())
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,8 +69,12 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
-                    currentCard = intent.getSerializableExtra("card") as Card?
-                    val card = remember { currentCard }
+                    val card = intent.getSerializableExtra("card") as Card?
+                    name = card?.name ?: ""
+                    barcode = card?.barcode ?: ""
+                    images = card?.images ?: listOf()
+                    locations = card?.locations ?: listOf()
+
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
                     var selectedLocation: Location? = null
@@ -76,9 +83,9 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
                         //Main card image (face side)
                         var cardPreview: File? = null
-                        if((card?.images?.size ?: 0) > 0) {
+                        if((images.size) > 0) {
                             DataController.getInstance()
-                                .getImage(card, card!!.images[0]) { _, file -> cardPreview = file }
+                                .getImage(card, images[0]) { _, file -> cardPreview = file }
                         }
                         Image(
                             painter = rememberAsyncImagePainter(model = cardPreview),
@@ -89,9 +96,9 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                                 .clip(RoundedCornerShape(10.dp))
                         )
 
-                        Text(fontSize = 50.sp, text = card?.name ?: "")
+                        Text(fontSize = 50.sp, text = name)
 
-                        val barcodeString: String = card?.barcode ?: ""
+                        val barcodeString: String = barcode
 
                         val writer = Code128Writer()
                         val matrix: BitMatrix =
@@ -114,20 +121,20 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
                         //Other images of the card
                         Column {
-                            card?.images?.map {
+                            images.map {
                                 var image: File? = null
                                 DataController.getInstance()
                                     .getImage(card, it) { _, file -> image = file }
                                 Image(
                                     painter = rememberAsyncImagePainter(model = image),
-                                    contentDescription = card.name
+                                    contentDescription = name
                                 )
                             }
                         }
 
                         Text("Locations:")
                         Column {
-                            card?.locations?.map {
+                            locations.map {
                                 ClickableText(text = AnnotatedString(it.name),
                                     style = TextStyle(color = Color.Blue),
                                     onClick = { _ ->
@@ -175,7 +182,10 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
     @EventHandler
     fun changeCardEvent(event: CardChangeEvent) {
-        currentCard = event.card
+        name = event.card.name
+        barcode = event.card.barcode ?: ""
+        images = event.card.images
+        locations = event.card.locations
     }
 
 }
@@ -276,8 +286,8 @@ fun CoordinateField(text: MutableState<String>) {
         onValueChange = { text.value = it },
         singleLine = true,
         modifier = Modifier.border(
-                2.dp, Color.LightGray, RoundedCornerShape(5.dp)
-            )
+            2.dp, Color.LightGray, RoundedCornerShape(5.dp)
+        )
     )
 }
 
