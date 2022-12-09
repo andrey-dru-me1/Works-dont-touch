@@ -8,7 +8,6 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.DataPairAction;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.LocalCard;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent;
 
 public class CreateCard extends DataPairAction<Card, String, String, Card> {
 
@@ -68,7 +67,6 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
         try {
             dataFileContainer.save(localCard, false);
             runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, localCard);
-            DataController.runEvent(new CardAddEvent(localCard));
         } catch (IOException e) {
             logger.log(Level.WARNING, "Card edit IOException ", e);
             runCallback(DataCallBack.DataStatus.CANCELED, null);
@@ -79,7 +77,6 @@ public class CreateCard extends DataPairAction<Card, String, String, Card> {
         try {
             dataFileContainer.save(card, true);
             runCallback(DataCallBack.DataStatus.OK, card);
-            DataController.runEvent(new CardAddEvent(card));
         } catch (IOException e) {
             logger.log(Level.WARNING, "Card edit IOException ", e);
             runCallback(DataCallBack.DataStatus.CANCELED, null);

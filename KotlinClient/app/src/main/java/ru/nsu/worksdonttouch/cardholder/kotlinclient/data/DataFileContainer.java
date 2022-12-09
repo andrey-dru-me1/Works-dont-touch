@@ -20,6 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.LocalCard;
@@ -96,10 +99,16 @@ public class DataFileContainer {
         if(card.getId() != null) {
             File f = new File(cardDir, card.getId() + ".json");
             mapper.writeValue(f, card);
-            cards.put(card.getId(), card);
+            Card oldCard = cards.put(card.getId(), card);
             if (!isSynchronized) {
                 addCardToUpdate(card.getId());
+            } else {
+                removeCardToUpdate(card.getId());
             }
+            if (oldCard != null)
+                DataController.runEvent(new CardChangeEvent(card));
+            else
+                DataController.runEvent(new CardAddEvent(card));
             return card;
         } else {
             LocalCard localCard;
@@ -112,7 +121,11 @@ public class DataFileContainer {
                 localCard.setLocalID(localCardNumber.incrementAndGet());
             File f = new File(localCardDir, (localCard.getLocalID() + ".json"));
             mapper.writeValue(f, localCard);
-            localCards.put(localCard.getLocalID(), localCard);
+            LocalCard oldCard = localCards.put(localCard.getLocalID(), localCard);
+            if (oldCard != null)
+                DataController.runEvent(new CardChangeEvent(card));
+            else
+                DataController.runEvent(new CardAddEvent(card));
             return localCard;
         }
     }
@@ -121,7 +134,8 @@ public class DataFileContainer {
         if(card.getId() != null) {
             File f = new File(cardDir, card.getId() + ".json");
             f.delete();
-            cards.remove(card.getId());
+            if(cards.remove(card.getId()) != null)
+                DataController.runEvent(new CardRemoveEvent(card));
         } else {
             if (card instanceof LocalCard) {
                 LocalCard localCard = (LocalCard) card;
@@ -129,7 +143,8 @@ public class DataFileContainer {
                     localCard.setLocalID(localCardNumber.incrementAndGet());
                 File f = new File(localCardDir, (localCard.getLocalID() + ".json"));
                 f.delete();
-                localCards.remove(localCard.getLocalID());
+                if(localCards.remove(localCard.getLocalID()) != null)
+                    DataController.runEvent(new CardRemoveEvent(card));
             }
         }
     }
@@ -143,7 +158,7 @@ public class DataFileContainer {
         }
     }
 
-    public UserData getUserDataFile() throws IOException {
+    public UserData getUserData() throws IOException {
         UserData userData = mapper.readValue(userDataFile, UserData.class);
         return userData;
     }
