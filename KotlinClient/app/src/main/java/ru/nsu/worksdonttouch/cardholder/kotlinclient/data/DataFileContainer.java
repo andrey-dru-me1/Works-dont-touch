@@ -151,7 +151,7 @@ public class DataFileContainer {
     }
 
     public void setUserData(UserData userData) throws IOException {
-        mapper.writeValue(userDataFile, UserData.class);
+        mapper.writeValue(userDataFile, userData);
     }
 
     private void loadCards() throws NullPointerException {
