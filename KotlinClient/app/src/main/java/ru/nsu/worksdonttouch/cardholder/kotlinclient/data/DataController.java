@@ -107,102 +107,116 @@ public class DataController {
     }
 
     public void createCard(String name, String barcode, DataCallBack<Card> callBack) {
-        CreateCard createCard = new CreateCard(this, callBack);
-        createCard.apply(name, barcode);
+        new Thread( () -> {
+            CreateCard createCard = new CreateCard(this, callBack);
+            createCard.apply(name, barcode);
+        });
     }
 
     public void editCard(Card card, DataCallBack<Card> callBack) {
-        EditCard editCard = new EditCard(this, callBack);
-        editCard.apply(card);
+        new Thread( () -> {
+            EditCard editCard = new EditCard(this, callBack);
+            editCard.apply(card);
+        });
     }
 
     public void deleteCard(Card card, DataCallBack<Card> callBack) {
-        if (isOffline || apiWorker == null) {
-            if (card instanceof LocalCard) {
-                try {
-                    dataFileContainer.deleteCard(card);
-                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
-                } catch (Exception e) {
+        new Thread( () -> {
+            if (isOffline || apiWorker == null) {
+                if (card instanceof LocalCard) {
+                    try {
+                        dataFileContainer.deleteCard(card);
+                        runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    } catch (Exception e) {
+                        runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                    }
+                } else {
                     runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
                 }
             } else {
-                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                apiWorker.deleteCard(card, (result, data) -> {
+                    if (result == HttpCallback.HttpResult.SUCCESSFUL) {
+                        runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    } else {
+                        runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                    }
+                });
             }
-        } else {
-            apiWorker.deleteCard(card, (result, data) -> {
-                if(result == HttpCallback.HttpResult.SUCCESSFUL) {
-                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
-                } else {
-                    runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
-                }
-            });
-        }
+        });
     }
 
     public void getImage(Card card, long id, DataCallBack<File> callBack) {
-        GetImage getImage = new GetImage(this, callBack);
-        getImage.apply(card, id);
+        new Thread( () -> {
+            GetImage getImage = new GetImage(this, callBack);
+            getImage.apply(card, id);
+        });
     }
 
     public void addImage(Card card, InputStream inputStream, DataCallBack<File> callBack) {
-        AddImage addImage = new AddImage(this, callBack);
-        addImage.apply(card, inputStream);
+        new Thread( () -> {
+            AddImage addImage = new AddImage(this, callBack);
+            addImage.apply(card, inputStream);
+        });
     }
 
     public void getCards(DataCallBack<Cards> callBack) {
-        if (isOffline || apiWorker == null) {
-            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-        } else {
-            apiWorker.getCardList((result, cardList) -> {
-                switch (result) {
-                    case NO_CONNECTION:
-                    case FAIL:
-                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                    case SUCCESSFUL:
-                        pushUpdates();
-                        runCallback(callBack, DataCallBack.DataStatus.OK, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                    case AUTHORIZATION_ERROR:
-                        runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        runEvent(new LogOutEvent(apiWorker.getUserData()));
-                        break;
-                    case NOT_FOUND:
-                        logger.log(Level.WARNING, "not found answer in get card list");
-                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                    case OTHER:
-                        logger.log(Level.WARNING, "unknown answer in get card list");
-                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                    case NO_PERMISSION:
-                        logger.log(Level.WARNING, "no permission in get card list");
-                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                    case WRONG_REQUEST:
-                        logger.log(Level.WARNING, "wrong request");
-                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                        break;
-                }
-            });
-        }
+        new Thread( () -> {
+            if (isOffline || apiWorker == null) {
+                runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+            } else {
+                apiWorker.getCardList((result, cardList) -> {
+                    switch (result) {
+                        case NO_CONNECTION:
+                        case FAIL:
+                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                        case SUCCESSFUL:
+                            pushUpdates();
+                            runCallback(callBack, DataCallBack.DataStatus.OK, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                        case AUTHORIZATION_ERROR:
+                            runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            runEvent(new LogOutEvent(apiWorker.getUserData()));
+                            break;
+                        case NOT_FOUND:
+                            logger.log(Level.WARNING, "not found answer in get card list");
+                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                        case OTHER:
+                            logger.log(Level.WARNING, "unknown answer in get card list");
+                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                        case NO_PERMISSION:
+                            logger.log(Level.WARNING, "no permission in get card list");
+                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                        case WRONG_REQUEST:
+                            logger.log(Level.WARNING, "wrong request");
+                            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                            break;
+                    }
+                });
+            }
+        });
     }
 
     public void getCards(DataCallBack<Cards> callBack, double latitude, double longitude) {
-        if (isOffline || apiWorker == null) {
-            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-        } else {
-            apiWorker.getCardList(latitude, longitude, (result, cardList) -> {
-                if (result == HttpCallback.HttpResult.SUCCESSFUL) {
-                    pushUpdates();
-                }
-                if (cardList != null) {
-                    runCallback(callBack, DataCallBack.DataStatus.OK, generateCards(cardList));
-                } else {
-                    runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
-                }
-            });
-        }
+        new Thread( () -> {
+            if (isOffline || apiWorker == null) {
+                runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+            } else {
+                apiWorker.getCardList(latitude, longitude, (result, cardList) -> {
+                    if (result == HttpCallback.HttpResult.SUCCESSFUL) {
+                        pushUpdates();
+                    }
+                    if (cardList != null) {
+                        runCallback(callBack, DataCallBack.DataStatus.OK, generateCards(cardList));
+                    } else {
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                    }
+                });
+            }
+        });
     }
 
     private Cards generateCards(@NotNull CardList list) {
