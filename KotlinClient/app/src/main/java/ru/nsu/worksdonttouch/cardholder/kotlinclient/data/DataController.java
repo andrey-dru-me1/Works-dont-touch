@@ -287,6 +287,7 @@ public class DataController {
                     listenerMap.get(type).add(new ListenerEventRunner(m, eventListener));
                 }
             }
+            clazz = clazz.getSuperclass();
         }
     }
 
