@@ -43,7 +43,7 @@ public class DataController {
 
     private ApiWorker apiWorker = null;
 
-    private boolean isOffline = false;
+    private boolean isOffline = true;
 
     private final DataFileContainer dataFileContainer;
 
@@ -54,7 +54,8 @@ public class DataController {
         try {
             UserData user = dataFileContainer.getUserData();
             apiWorker = ApiWorker.authTest(user);
-            isOffline = false;
+            if (apiWorker != null)
+                isOffline = false;
         } catch (Exception e) {}
     }
 
