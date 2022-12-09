@@ -24,7 +24,7 @@ public abstract class ApiWorker {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     static String authorizationString(UserData data) {
-        return new String(Base64.getEncoder().encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
+        return "Basic "+new String(Base64.getEncoder().encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
     }
 
     public static ApiWorker authTest(UserData data) throws IOException, NotAuthorizedException, NullPointerException {

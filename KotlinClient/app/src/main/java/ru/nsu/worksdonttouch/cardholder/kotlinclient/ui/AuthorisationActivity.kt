@@ -2,6 +2,9 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract.Data
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -14,9 +17,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class AuthorisationActivity : ComponentActivity() {
@@ -65,13 +71,24 @@ class AuthorisationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        //TODO: set user globally
-//        DataController.getInstance().user = User(
-//            login = login,
-//            password = password,
-//            token = Random(System.currentTimeMillis()).toString()
-//        )
-        startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+        Thread {
+            try {
+                DataController.getInstance().loginUser(UserData(login, password))
+            } catch (e: Throwable) {
+                Log.d("EXCEPTION", e.message.toString())
+            }
+
+            if (!DataController.getInstance().isOffline) {
+                runOnUiThread{
+                    startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+                }
+            } else {
+                runOnUiThread {
+                    Toast.makeText(this, "Wrong login or password", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+
     }
 
 }

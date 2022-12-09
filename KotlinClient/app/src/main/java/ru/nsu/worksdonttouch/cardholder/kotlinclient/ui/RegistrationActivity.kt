@@ -2,6 +2,8 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 
 class RegistrationActivity : ComponentActivity() {
@@ -28,38 +31,36 @@ class RegistrationActivity : ComponentActivity() {
             KotlinClientTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
                     Column {
                         var login by rememberSaveable { mutableStateOf("") }
                         var password by rememberSaveable { mutableStateOf("") }
-                        TextField(
-                            value = login,
-                            label = { Text( "Login" ) },
+                        TextField(value = login,
+                            label = { Text("Login") },
                             onValueChange = { login = it },
                             singleLine = true
                         )
-                        TextField(
-                            value = password,
-                            label = { Text( "Password" ) },
+                        TextField(value = password,
+                            label = { Text("Password") },
                             onValueChange = { password = it },
                             singleLine = true
                         )
-                        Button(
-                            onClick = { onSaveButtonClick(login, password) }
-                        ) {
+                        Button(onClick = { onSaveButtonClick(login, password) }) {
                             Text("Register")
                         }
                         TextLink(string = "Sign in") {
-                            val intent = Intent(this@RegistrationActivity, AuthorisationActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            val intent =
+                                Intent(this@RegistrationActivity, AuthorisationActivity::class.java)
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                         }
                         TextLink(string = "Continue offline") {
                             DataController.getInstance().startOffline()
                             val intent = Intent(this@RegistrationActivity, MainActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                         }
                     }
@@ -69,17 +70,35 @@ class RegistrationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        //TODO: register new user
-        startActivity(Intent(this@RegistrationActivity, MainActivity::class.java))
+        Thread {
+            try {
+                DataController.getInstance().registerUser(UserData(login, password))
+            } catch (e: Throwable) {
+                Log.d("EXCEPTION", e.message.toString())
+            }
+
+            if (!DataController.getInstance().isOffline) {
+                runOnUiThread {
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+            } else {
+                runOnUiThread {
+                    Toast.makeText(
+                        this,
+                        "Something went wrong. Tru connect later",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+            }
+        }.start()
     }
 
     @Composable
     private fun TextLink(string: String, onClick: (Int) -> Unit) {
-        ClickableText(
-            text = AnnotatedString(string),
+        ClickableText(text = AnnotatedString(string),
             style = TextStyle(color = Color.Blue, textDecoration = TextDecoration.Underline),
-            onClick = { onClick(it) }
-        )
+            onClick = { onClick(it) })
     }
 
 }

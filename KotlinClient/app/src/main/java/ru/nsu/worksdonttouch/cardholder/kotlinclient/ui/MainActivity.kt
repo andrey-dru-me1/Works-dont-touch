@@ -47,6 +47,8 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
 import java.util.*
 
+private var isStarted = false;
+
 class MainActivity : ComponentActivity(), EventListener {
 
     private val cards: MutableState<Cards?> = mutableStateOf(null)
@@ -54,18 +56,25 @@ class MainActivity : ComponentActivity(), EventListener {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!isStarted) {
+            DataController.init(this.filesDir)
 
-        DataController.init(this.filesDir)
+            val requestPermissionLauncher =
+                registerForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) {}
+            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            requestPermissionLauncher.launch(Manifest.permission.INTERNET)
+            isStarted = true
+        }
 
         update()
-        DataController.getInstance().startOffline()
-
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) {}
-        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if(DataController.getInstance().isOffline) {
+            val intent = Intent(this, AuthorisationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
 
         setContent {
             KotlinClientTheme {
