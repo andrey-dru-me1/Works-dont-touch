@@ -51,6 +51,11 @@ public class DataController {
 
     private DataController(File dir) throws IOException {
         dataFileContainer = new DataFileContainer(dir);
+        try {
+            UserData user = dataFileContainer.getUserData();
+            apiWorker = ApiWorker.authTest(user);
+            isOffline = false;
+        } catch (Exception e) {}
     }
 
     public static synchronized void init(File dir) throws IOException {
@@ -116,7 +121,6 @@ public class DataController {
                 try {
                     dataFileContainer.deleteCard(card);
                     runCallback(callBack, DataCallBack.DataStatus.OK, card);
-                    runEvent(new CardRemoveEvent(card));
                 } catch (Exception e) {
                     runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
                 }
@@ -127,7 +131,6 @@ public class DataController {
             apiWorker.deleteCard(card, (result, data) -> {
                 if(result == HttpCallback.HttpResult.SUCCESSFUL) {
                     runCallback(callBack, DataCallBack.DataStatus.OK, card);
-                    runEvent(new CardRemoveEvent(card));
                 } else {
                     runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
                 }
@@ -237,7 +240,9 @@ public class DataController {
                         if (data != null) {
                             try {
                                 dataFileContainer.save(data, true);
-                                apiWorker.editCard(card, (result1, data1) -> {
+                                Card createdCard = new Card(data.getId(), card.getName(), card.getBarcode(), new ArrayList<>(), card.getLocations());
+                                dataFileContainer.deleteCard(card);
+                                apiWorker.editCard(createdCard, (result1, data1) -> {
                                     if (data1 != null) {
                                         try {
                                             dataFileContainer.save(data1, true);
@@ -246,6 +251,13 @@ public class DataController {
                                         }
                                     }
                                 });
+                                for (long imageID : card.getImages()) {
+                                    try {
+                                        apiWorker.uploadImage(dataFileContainer.getImageFile(imageID, card), createdCard.getId(), (result1, data1) -> {});
+                                    } catch (Exception e) {
+                                        logger.log(Level.INFO, "image add error", e);
+                                    }
+                                }
                             } catch (Exception e) {
                                 logger.log(Level.INFO, "card edit error", e);
                             }

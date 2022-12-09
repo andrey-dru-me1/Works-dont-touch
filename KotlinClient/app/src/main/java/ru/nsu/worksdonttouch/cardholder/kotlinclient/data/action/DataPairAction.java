@@ -35,7 +35,7 @@ public abstract class DataPairAction<T, R, L, K> {
                 onlineRun(object1, object2);
             } else {
                 runCallback(DataCallBack.DataStatus.WRONG_USER, null);
-                DataController.runEvent(new LogOutEvent(apiWorker.getUserData()));
+                DataController.runEvent(new LogOutEvent(null));
             }
         }
     }

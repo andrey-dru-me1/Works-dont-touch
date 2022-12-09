@@ -7,7 +7,6 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.DataAction;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent;
 
 public class EditCard extends DataAction<Card, Card, Card> {
 
@@ -65,7 +64,6 @@ public class EditCard extends DataAction<Card, Card, Card> {
         try {
             dataFileContainer.save(card, false);
             runCallback(DataCallBack.DataStatus.NOT_SYNCHRONISED, card);
-            DataController.runEvent(new CardChangeEvent(card));
         } catch (IOException e) {
             logger.log(Level.WARNING, "Card edit IOException ", e);
             runCallback(DataCallBack.DataStatus.CANCELED, null);
