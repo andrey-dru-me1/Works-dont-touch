@@ -71,23 +71,30 @@ class AuthorisationActivity : ComponentActivity() {
     }
 
     private fun onSaveButtonClick(login: String, password: String) {
-        Thread {
-            try {
-                DataController.getInstance().loginUser(UserData(login, password))
-            } catch (e: Throwable) {
-                Log.d("EXCEPTION", e.message.toString())
-            }
 
-            if (!DataController.getInstance().isOffline) {
-                runOnUiThread{
-                    startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
-                }
-            } else {
-                runOnUiThread {
-                    Toast.makeText(this, "Wrong login or password", Toast.LENGTH_SHORT).show()
-                }
+        DataController.getInstance().loginUser(UserData(login, password)) { code, data ->
+            switch(code) {
+
             }
-        }.start()
+        }
+
+//        Thread {
+//            try {
+//                DataController.getInstance().loginUser(UserData(login, password))
+//            } catch (e: Throwable) {
+//                Log.d("EXCEPTION", e.message.toString())
+//            }
+//
+//            if (!DataController.getInstance().isOffline) {
+//                runOnUiThread{
+//                    startActivity(Intent(this@AuthorisationActivity, MainActivity::class.java))
+//                }
+//            } else {
+//                runOnUiThread {
+//                    Toast.makeText(this, "Wrong login or password", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        }.start()
 
     }
 

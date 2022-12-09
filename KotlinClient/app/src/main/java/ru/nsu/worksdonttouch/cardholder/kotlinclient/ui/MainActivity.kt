@@ -59,10 +59,9 @@ class MainActivity : ComponentActivity(), EventListener {
         if (!isStarted) {
             DataController.init(this.filesDir)
 
-            val requestPermissionLauncher =
-                registerForActivityResult(
-                    ActivityResultContracts.RequestPermission()
-                ) {}
+            val requestPermissionLauncher = registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) {}
             requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
             requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             requestPermissionLauncher.launch(Manifest.permission.INTERNET)
@@ -70,7 +69,7 @@ class MainActivity : ComponentActivity(), EventListener {
         }
 
         update()
-        if(DataController.getInstance().isOffline) {
+        if (DataController.getInstance().isOffline) {
             val intent = Intent(this, AuthorisationActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
@@ -80,8 +79,7 @@ class MainActivity : ComponentActivity(), EventListener {
             KotlinClientTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.hsl(245F, 0.3F, 0.2F)
+                    modifier = Modifier.fillMaxSize(), color = Color.hsl(245F, 0.3F, 0.2F)
                 ) {
                     val list = remember { cards }
                     CardsGrid(list)
@@ -99,17 +97,17 @@ class MainActivity : ComponentActivity(), EventListener {
 
     @EventHandler
     fun addCardEvent(event: CardAddEvent) {
-        update()
+        runOnUiThread { update() }
     }
 
     @EventHandler
     fun changeCardEvent(event: CardChangeEvent) {
-        update()
+        runOnUiThread { update() }
     }
 
     @EventHandler
     fun removeCardEvent(event: CardRemoveEvent) {
-        update()
+        runOnUiThread { update() }
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -187,8 +185,7 @@ class MainActivity : ComponentActivity(), EventListener {
                 intent.putExtra("card", card)
                 mContext.startActivity(intent)
             },
-        )
-        {
+        ) {
             Box {
                 val image: MutableState<File?> =
                     remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
@@ -231,19 +228,13 @@ class MainActivity : ComponentActivity(), EventListener {
         Box(
             contentAlignment = Alignment.BottomEnd
         ) {
-            Button(
-                shape = CircleShape,
-                modifier = Modifier
-                    .padding(15.dp)
-                    .size(60.dp),
-                onClick = {
-                    mContext.startActivity(Intent(mContext, AddCardActivity::class.java))
-                }
-            )
-            {
+            Button(shape = CircleShape, modifier = Modifier
+                .padding(15.dp)
+                .size(60.dp), onClick = {
+                mContext.startActivity(Intent(mContext, AddCardActivity::class.java))
+            }) {
                 Text(
-                    text = "+",
-                    fontSize = 32.sp
+                    text = "+", fontSize = 32.sp
                 )
             }
         }
