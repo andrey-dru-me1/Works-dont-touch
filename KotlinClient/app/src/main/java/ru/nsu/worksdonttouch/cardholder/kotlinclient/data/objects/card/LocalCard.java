@@ -7,13 +7,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location;
 
-public class LocalCard extends Card {
+public class LocalCard extends Card implements Serializable {
+
+    private static final long serialVersionUID = 0L;
 
     private Integer localID;
 
@@ -42,12 +45,10 @@ public class LocalCard extends Card {
         this.localID = null;
     }
 
-    @JsonIgnore
     public Integer getLocalID() {
         return localID;
     }
 
-    @JsonIgnore
     public void setLocalID(Integer localID) {
         this.localID = localID;
     }

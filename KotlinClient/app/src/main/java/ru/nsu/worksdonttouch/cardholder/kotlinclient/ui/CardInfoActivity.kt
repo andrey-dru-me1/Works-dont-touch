@@ -40,6 +40,9 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Coordinate
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location
@@ -49,7 +52,12 @@ import java.io.File
 import java.util.*
 
 
-class CardInfoActivity : ComponentActivity() {
+class CardInfoActivity : ComponentActivity(), EventListener {
+
+    private var name: String by mutableStateOf("")
+    private var barcode: String by mutableStateOf("")
+    private var images: List<Long> by mutableStateOf(listOf())
+    private var locations: List<Location> by mutableStateOf(listOf())
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,10 +67,14 @@ class CardInfoActivity : ComponentActivity() {
             KotlinClientTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
-                    val card: Card = intent.getParcelableExtra("card")!!
+                    val card = intent.getSerializableExtra("card") as Card?
+                    name = card?.name ?: ""
+                    barcode = card?.barcode ?: ""
+                    images = card?.images ?: listOf()
+                    locations = card?.locations ?: listOf()
+
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
                     var selectedLocation: Location? = null
@@ -70,8 +82,13 @@ class CardInfoActivity : ComponentActivity() {
                     Column {
 
                         //Main card image (face side)
+                        var cardPreview: File? = null
+                        if((images.size) > 0) {
+                            DataController.getInstance()
+                                .getImage(card, images[0]) { _, file -> cardPreview = file }
+                        }
                         Image(
-                            painter = rememberAsyncImagePainter(model = card.images[0]),
+                            painter = rememberAsyncImagePainter(model = cardPreview),
                             contentDescription = "Card preview",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
@@ -79,9 +96,9 @@ class CardInfoActivity : ComponentActivity() {
                                 .clip(RoundedCornerShape(10.dp))
                         )
 
-                        Text(fontSize = 50.sp, text = card.name)
+                        Text(fontSize = 50.sp, text = name)
 
-                        val barcodeString: String = card.barcode ?: ""
+                        val barcodeString: String = barcode
 
                         val writer = Code128Writer()
                         val matrix: BitMatrix =
@@ -104,35 +121,32 @@ class CardInfoActivity : ComponentActivity() {
 
                         //Other images of the card
                         Column {
-                            card.images.map {
+                            images.map {
                                 var image: File? = null
                                 DataController.getInstance()
                                     .getImage(card, it) { _, file -> image = file }
                                 Image(
                                     painter = rememberAsyncImagePainter(model = image),
-                                    contentDescription = card.name
+                                    contentDescription = name
                                 )
                             }
                         }
 
                         Text("Locations:")
                         Column {
-                            card.locations.map {
-                                ClickableText(
-                                    text = AnnotatedString(it.name),
+                            locations.map {
+                                ClickableText(text = AnnotatedString(it.name),
                                     style = TextStyle(color = Color.Blue),
                                     onClick = { _ ->
                                         selectedLocation = it
                                         openDialog.value = true
-                                    }
-                                )
+                                    })
                             }
                         }
 
                     }
                     Box(contentAlignment = Alignment.BottomEnd) {
-                        Button(
-                            shape = CircleShape,
+                        Button(shape = CircleShape,
                             modifier = Modifier
                                 .padding(15.dp)
                                 .size(60.dp),
@@ -141,8 +155,7 @@ class CardInfoActivity : ComponentActivity() {
                                     Intent(this@CardInfoActivity, EditCardActivity::class.java)
                                 intent.putExtra("card", card)
                                 startActivity(intent)
-                            }
-                        ) {
+                            }) {
                             Image(
                                 painter = painterResource(id = R.drawable.pen),
                                 contentDescription = "Edit card"
@@ -158,6 +171,21 @@ class CardInfoActivity : ComponentActivity() {
                 }
             }
         }
+
+        DataController.registerListener(this)
+    }
+
+    override fun onDestroy() {
+        DataController.unregisterListener(this)
+        super.onDestroy()
+    }
+
+    @EventHandler
+    fun changeCardEvent(event: CardChangeEvent) {
+        name = event.card.name
+        barcode = event.card.barcode ?: ""
+        images = event.card.images
+        locations = event.card.locations
     }
 
 }
@@ -171,11 +199,9 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
             .background(Color.Black.copy(alpha = 0.6f))
             .padding(35.dp, 80.dp)
     ) {
-        Popup(
-            properties = PopupProperties(focusable = true),
+        Popup(properties = PopupProperties(focusable = true),
             alignment = Alignment.Center,
-            onDismissRequest = { close() }
-        ) {
+            onDismissRequest = { close() }) {
             Box(
                 modifier = Modifier
                     .size(maxWidth, maxHeight)
@@ -186,12 +212,11 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                 val latitude = remember { mutableStateOf("") }
                 val longitude = remember { mutableStateOf("") }
 
-                val coors: SnapshotStateList<Coordinate?> =
-                    remember {
-                        val res = mutableStateListOf<Coordinate?>()
-                        res.addAll(localLocation.coordinates)
-                        res
-                    }
+                val coors: SnapshotStateList<Coordinate?> = remember {
+                    val res = mutableStateListOf<Coordinate?>()
+                    res.addAll(localLocation.coordinates)
+                    res
+                }
 
                 Column {
 
@@ -222,8 +247,7 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                     onClick = {
                         coors.add(
                             Coordinate(
-                                latitude.value.toDouble(),
-                                longitude.value.toDouble()
+                                latitude.value.toDouble(), longitude.value.toDouble()
                             )
                         )
                         longitude.value = ""
@@ -242,7 +266,8 @@ fun EditCoordinatesFragment(location: Location, close: () -> Unit) {
                     onClick = {
                         location.coordinates = localLocation.coordinates
                         close()
-                    }, modifier = Modifier
+                    },
+                    modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(30.dp, 20.dp)
                         .clip(CircleShape)
@@ -260,12 +285,9 @@ fun CoordinateField(text: MutableState<String>) {
         value = text.value,
         onValueChange = { text.value = it },
         singleLine = true,
-        modifier = Modifier
-            .border(
-                2.dp,
-                Color.LightGray,
-                RoundedCornerShape(5.dp)
-            )
+        modifier = Modifier.border(
+            2.dp, Color.LightGray, RoundedCornerShape(5.dp)
+        )
     )
 }
 
@@ -276,18 +298,13 @@ fun DefaultPreview2() {
         val location = remember {
             mutableStateOf(
                 Location(
-                    "Быстроном",
-                    true,
-                    listOf(Coordinate(15.0, 20.0))
+                    "Быстроном", true, listOf(Coordinate(15.0, 20.0))
                 )
             )
         }
         val flag = remember { mutableStateOf(true) }
         if (flag.value) {
-            EditCoordinatesFragment(
-                location = location.value,
-                close = { flag.value = false }
-            )
+            EditCoordinatesFragment(location = location.value, close = { flag.value = false })
         }
         Button(onClick = { flag.value = true }, Modifier.wrapContentSize()) {
 
