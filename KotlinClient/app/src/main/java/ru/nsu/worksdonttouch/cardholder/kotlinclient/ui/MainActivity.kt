@@ -37,9 +37,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Cards
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
 import java.util.*
 
@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity(), EventListener {
         DataController.init(this.filesDir)
 
         DataController.getInstance().getCards { _, data -> cards.value = data }
+        DataController.getInstance().startOffline()
 
         val requestPermissionLauncher =
             registerForActivityResult(
@@ -76,7 +77,7 @@ class MainActivity : ComponentActivity(), EventListener {
                 }
             }
         }
-//        DataController.registerListener(this);
+        DataController.registerListener(this);
     }
 
 //    override fun update(update: Update) {
