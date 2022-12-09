@@ -1,253 +1,133 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.ui
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.pullRefreshIndicatorTransform
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.gps.GPSTracker
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import java.io.File
-import java.util.*
+import android.provider.Settings
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.location.LocationManagerCompat.getCurrentLocation
+import androidx.core.location.LocationManagerCompat.isLocationEnabled
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
-class MainActivity : ComponentActivity(), EventListener {
 
-    private val cards: SnapshotStateList<Card> = mutableStateListOf()
+class MainActivity : AppCompatActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.R)
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var tvLatitude: TextView
+    private lateinit var tvLongitude: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DataController.init(this.filesDir)
 
-        DataController.getInstance().getCards { _, data -> cards.addAll(data) }
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-
-        val gps = GPSTracker(this@MainActivity)
-        if(gps.canGetLocation()){
-            val latitude = gps.latitude
-            val longitude = gps.longitude
+        var res : Location? = null
+        res = getCurrentLocation()
+        if (res != null) {
+            Toast.makeText(this, "" + res.latitude + " " + res.longitude, Toast.LENGTH_SHORT).show()
+            tvLatitude.text = "" + res.latitude
+            tvLongitude.text = "" + res.longitude
         }
-        else{
-            gps.showSettingsAlert();
+        else {
+            Toast.makeText(this, "NULLLL", Toast.LENGTH_SHORT).show()
         }
-
-
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ){}
-        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-        setContent {
-            KotlinClientTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.hsl(245F, 0.3F, 0.2F)
-                ) {
-                    val list = remember { cards }
-                    CardsGrid(list)
-
-                    AddCardButton()
-                }
-            }
-        }
-//        DataController.registerListener(this);
     }
 
-//    override fun update(update: Update) {
-//        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
-//            cards.clear()
-//            cards.addAll(DataController.getInstance().cards)
-//        }
-//    }
-
-    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    fun CardsGrid(cards: SnapshotStateList<Card>) {
-        val refreshScope = rememberCoroutineScope()
-        var refreshing by remember { mutableStateOf(false) }
-
-        fun refresh() = refreshScope.launch {
-            refreshing = true
-            //TODO: Try connecting to a server and synchronize all the data
-            delay(1500)
-            refreshing = false
-        }
-
-        val state = rememberPullRefreshState(refreshing, ::refresh)
-        val rotation = animateFloatAsState(state.progress * 120)
-
-        Box(
-            Modifier
-                .fillMaxSize()
-                .pullRefresh(state)
-        ) {
-
-            //Grid of cards
-            LazyVerticalGrid (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(5.dp),
-                columns = GridCells.Fixed(2),
-            ) {
-                cards.map {  item { CardView(it) } }
-            }
-
-            //Spinning round
-            Surface(
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.TopCenter)
-                    .pullRefreshIndicatorTransform(state)
-                    .rotate(rotation.value),
-                shape = RoundedCornerShape(10.dp),
-                color = Color.DarkGray,
-                elevation = if (state.progress > 0 || refreshing) 20.dp else 0.dp,
-            ) {
-                Box {
-                    if (refreshing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(25.dp),
-                            color = Color.White,
-                            strokeWidth = 3.dp
-                        )
+    private fun getCurrentLocation() : Location? {
+        var res : Location? = null
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    requestPermission()
+                    return null
+                }
+                var a : Location? = null
+                fusedLocationProviderClient.lastLocation.addOnCompleteListener(this) { task ->
+                    val location : Location? = task.result
+                    if (location == null) {
+                        Toast.makeText(this, "Null Recieved", Toast.LENGTH_SHORT).show()
                     }
+                    else {
+                        Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
+                        res = location
+//                        tvLatitude.text = "" + location.latitude
+//                        tvLongitude.text = "" + location.longitude
+                    }
+                    res = location
                 }
+                return res
+            }
+            else {
+                Toast.makeText(this, "Turn on location", Toast.LENGTH_SHORT).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
             }
         }
+        else {
+            requestPermission()
+        }
+        return res
     }
 
-    @Composable
-    fun CardView(card: Card) {
-
-        val mContext = LocalContext.current
-
-        IconButton(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(3.5.dp),
-            onClick = {
-                val intent = Intent(mContext, CardInfoActivity::class.java)
-                intent.putExtra("card", card)
-                mContext.startActivity(intent)
-            },
+    private fun isLocationEnabled() : Boolean {
+        val locationManager : LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
         )
-        {
-            Box {
-                val image: MutableState<File?> = remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-                DataController.getInstance()
-                    .getImage(card, card.images[0]) { _, file -> image.value = file}
-                Image(
-                    painter = rememberAsyncImagePainter(model = image),
-                    contentDescription = card.name,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .aspectRatio((86.0 / 54).toFloat())
-                        .clip(RoundedCornerShape(10.dp))
-                )
-                Box(
-                    contentAlignment = Alignment.BottomStart,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
-                        .align(Alignment.BottomStart)
-                ) {
-                    Text(
-                        text = card.name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(6.dp, 0.dp)
-                    )
-                }
-            }
-        }
     }
 
-    @Composable
-    fun AddCardButton() {
-
-        val mContext = LocalContext.current
-
-        Box(
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            Button(
-                shape = CircleShape,
-                modifier = Modifier
-                    .padding(15.dp)
-                    .size(60.dp),
-                onClick = {
-                    mContext.startActivity(Intent(mContext, AddCardActivity::class.java))
-                }
-            )
-            {
-                Text(
-                    text = "+",
-                    fontSize = 32.sp
-                )
-            }
-        }
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(this,
+            arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION),
+            PERMISSION_REQUEST_ACCESS_LOCATION)
     }
 
-}
+    companion object {
+        private const val PERMISSION_REQUEST_ACCESS_LOCATION=100
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    KotlinClientTheme {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(Color.Gray) ) {
-            LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize(),
-                columns = GridCells.Fixed(2),
-            ) {
-                item {
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(color = Color.Blue))
-                }
+    private fun checkPermissions(): Boolean {
+        if (ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return true
+        }
+        return false
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(applicationContext, "Granted", Toast.LENGTH_SHORT).show()
+                getCurrentLocation()
+            }
+            else {
+                Toast.makeText(applicationContext, "Denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
