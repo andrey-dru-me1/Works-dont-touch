@@ -230,6 +230,7 @@ public class DataController {
                 cards.getOther().add(localCard);
             }
         }
+        cards.getSortedCards().sort((o1, o2) -> (int) (o1.getDistance() - o2.getDistance()));
         return cards;
     }
 
@@ -291,7 +292,7 @@ public class DataController {
 
     public static void registerListener(@NotNull EventListener eventListener) {
         Class<?> clazz = eventListener.getClass();
-        while (!clazz.isPrimitive()) {
+        while (clazz != null) {
             for (Method m : clazz.getMethods()) {
                 if (m.isAnnotationPresent(EventHandler.class) && m.getParameterTypes().length == 1 && Event.class.isAssignableFrom(m.getParameterTypes()[0])) {
                     Class<? extends Event> type = (Class<? extends Event>) m.getParameterTypes()[0];
@@ -311,6 +312,8 @@ public class DataController {
     }
 
     public static void runEvent(@NotNull Event event) {
+        if (listenerMap.get(event.getClass()) == null)
+            return;
         for (ListenerEventRunner runner : listenerMap.get(event.getClass())) {
             try {
                 runner.run(event);

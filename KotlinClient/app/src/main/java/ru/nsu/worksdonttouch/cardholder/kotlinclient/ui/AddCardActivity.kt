@@ -34,7 +34,6 @@ class AddCardActivity : ComponentActivity() {
     private var cardName: String = ""
     private var barCode: String = ""
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -108,7 +107,6 @@ class AddCardActivity : ComponentActivity() {
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun SaveButton(bitmap: Bitmap?) {
         Button(onClick = {

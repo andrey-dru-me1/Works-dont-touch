@@ -21,7 +21,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.pullRefreshIndicatorTransform
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,15 +36,20 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
 import java.util.*
 
 class MainActivity : ComponentActivity(), EventListener {
 
-    private val cards: SnapshotStateList<Card> = mutableStateListOf()
+    private val cards: MutableState<Cards?> = mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,12 +57,13 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
-        DataController.getInstance().getCards { _, data -> cards.addAll(data.other) }
+        update()
+        DataController.getInstance().startOffline()
 
         val requestPermissionLauncher =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()
-            ){}
+            ) {}
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -76,26 +81,39 @@ class MainActivity : ComponentActivity(), EventListener {
                 }
             }
         }
-//        DataController.registerListener(this);
+        DataController.registerListener(this)
     }
 
-//    override fun update(update: Update) {
-//        if (update.type == UpdateType.ADD_CARD || update.type == UpdateType.REPLACE_CARD) {
-//            cards.clear()
-//            cards.addAll(DataController.getInstance().cards)
-//        }
-//    }
+    private fun update() {
+        DataController.getInstance().getCards { _, data -> cards.value = data }
+    }
+
+    @EventHandler
+    fun addCardEvent(event: CardAddEvent) {
+        update()
+    }
+
+    @EventHandler
+    fun changeCardEvent(event: CardChangeEvent) {
+        update()
+    }
+
+    @EventHandler
+    fun removeCardEvent(event: CardRemoveEvent) {
+        update()
+    }
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun CardsGrid(cards: SnapshotStateList<Card>) {
+    fun CardsGrid(cards: MutableState<Cards?>) {
         val refreshScope = rememberCoroutineScope()
         var refreshing by remember { mutableStateOf(false) }
 
         fun refresh() = refreshScope.launch {
             refreshing = true
             //TODO: Try connecting to a server and synchronize all the data
-            delay(1500)
+            update()
+            delay(500)
             refreshing = false
         }
 
@@ -109,13 +127,15 @@ class MainActivity : ComponentActivity(), EventListener {
         ) {
 
             //Grid of cards
-            LazyVerticalGrid (
+            LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(5.dp),
                 columns = GridCells.Fixed(2),
             ) {
-                cards.map {  item { CardView(it) } }
+                cards.value?.sortedCards?.sortedBy { it.distance }
+                    ?.map { item { CardView(it.card) } }
+                cards.value?.other?.map { item { CardView(it) } }
             }
 
             //Spinning round
@@ -161,11 +181,14 @@ class MainActivity : ComponentActivity(), EventListener {
         )
         {
             Box {
-                val image: MutableState<File?> = remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-                DataController.getInstance()
-                    .getImage(card, card.images[0]) { _, file -> image.value = file}
+                val image: MutableState<File?> =
+                    remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
+                if (card.images.size > 0) {
+                    DataController.getInstance()
+                        .getImage(card, card.images[0]) { _, file -> image.value = file }
+                }
                 Image(
-                    painter = rememberAsyncImagePainter(model = image),
+                    painter = rememberAsyncImagePainter(model = image.value),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
@@ -226,7 +249,8 @@ fun DefaultPreview() {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color.Gray) ) {
+                .background(Color.Gray)
+        ) {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
                 columns = GridCells.Fixed(2),
@@ -235,7 +259,8 @@ fun DefaultPreview() {
                     Box(
                         Modifier
                             .fillMaxSize()
-                            .background(color = Color.Blue))
+                            .background(color = Color.Blue)
+                    )
                 }
             }
         }

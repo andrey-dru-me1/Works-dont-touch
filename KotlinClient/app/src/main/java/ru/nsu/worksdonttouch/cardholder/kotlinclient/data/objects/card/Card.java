@@ -1,16 +1,12 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +14,9 @@ import java.util.stream.Collectors;
 
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location;
 
-public class Card implements Parcelable {
+public class Card implements Serializable {
+
+    private static final long serialVersionUID = 0L;
 
     @Nullable
     protected Long id;
@@ -66,30 +64,6 @@ public class Card implements Parcelable {
         this.locations = Collections.synchronizedList(locations == null ? new ArrayList<>() : locations);
     }
 
-    protected Card(Parcel in) {
-        if (in.readByte() == 0) {
-            id = null;
-        } else {
-            id = in.readLong();
-        }
-        name = in.readString();
-        barcode = in.readString();
-        in.readList(images, null);
-        in.readList(locations, null);
-    }
-
-    public static final Creator<Card> CREATOR = new Creator<Card>() {
-        @Override
-        public Card createFromParcel(Parcel in) {
-            return new Card(in);
-        }
-
-        @Override
-        public Card[] newArray(int size) {
-            return new Card[size];
-        }
-    };
-
     @Nullable
     public Long getId() {
         return id;
@@ -125,21 +99,6 @@ public class Card implements Parcelable {
 
     public Card clone() {
         return new Card(id, name, barcode, new ArrayList<>(images), locations.stream().map(Location::clone).collect(Collectors.toList()));
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        if(this.id == null) return;
-        dest.writeLong(this.id);
-        dest.writeString(this.name);
-        dest.writeString(barcode);
-        dest.writeList(images);
-        dest.writeList(locations);
     }
 
     @Override

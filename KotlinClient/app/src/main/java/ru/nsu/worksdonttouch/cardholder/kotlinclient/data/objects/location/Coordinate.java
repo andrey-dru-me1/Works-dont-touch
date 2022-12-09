@@ -3,7 +3,11 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
+
+    private static final long serialVersionUID = 0L;
 
     private double latitude;
     private double longitude;

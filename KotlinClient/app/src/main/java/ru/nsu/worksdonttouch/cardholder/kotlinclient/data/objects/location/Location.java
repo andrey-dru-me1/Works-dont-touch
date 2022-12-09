@@ -1,9 +1,12 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Location {
+public class Location implements Serializable {
+
+    private static final long serialVersionUID = 0L;
 
     private String name;
     private boolean isCustom;
