@@ -1,6 +1,5 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.location;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

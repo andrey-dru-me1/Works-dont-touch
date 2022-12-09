@@ -4,9 +4,9 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.net.requests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.CardList;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.Configuration;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
@@ -57,6 +57,28 @@ public class ApiRequests extends ApiWorker {
             else {
                 callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
+        }
+    }
+    @Override
+    public void getCardList(HttpCallback<CardList> callback) {
+        HttpUrl url = Configuration.basicBuilder().addPathSegments("cards/getList")
+                .build();
+        Request request = new Request.Builder()
+                .addHeader("Authorization", authorizationString(user))
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                callback.answer(HttpCallback.HttpResult.errorHandler(response), null);
+                return;
+            }
+            CardList cardList = objectMapper.readValue(response.body().string(), CardList.class);
+            callback.answer(HttpCallback.HttpResult.SUCCESSFUL, cardList);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -271,6 +293,7 @@ public class ApiRequests extends ApiWorker {
             callback.answer(HttpCallback.HttpResult.NO_CONNECTION, null);
         }
     }
+
 
     @Override
     public void deleteCard(Card card, HttpCallback<Card> callback) {

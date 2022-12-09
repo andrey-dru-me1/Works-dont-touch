@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card;
 
 public class SortedCard {
 

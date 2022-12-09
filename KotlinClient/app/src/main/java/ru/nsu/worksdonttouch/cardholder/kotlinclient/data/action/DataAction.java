@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -7,6 +7,7 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataCallBack;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataFileContainer;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 

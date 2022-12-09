@@ -1,7 +1,5 @@
 package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
-import androidx.annotation.RequiresOptIn;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jetbrains.annotations.NotNull;
@@ -22,9 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.LocalCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.LocalCard;
 
 public class DataFileContainer {
 
@@ -220,7 +218,7 @@ public class DataFileContainer {
         updateSet.removeIf(checkID -> !cards.containsKey(checkID));
     }
 
-    public List<Card> getUpdateSet() {
+    public List<Card> getUpdateList() {
         ArrayList<Card> cards = new ArrayList<>();
         cards.addAll(this.localCards.values().stream().map(LocalCard::clone).collect(Collectors.toList()));
         cards.addAll(updateSet.stream().map(aLong -> this.cards.get(aLong)).filter(Objects::nonNull).collect(Collectors.toList()));

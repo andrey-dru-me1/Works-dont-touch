@@ -1,4 +1,4 @@
-package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action;
+package ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

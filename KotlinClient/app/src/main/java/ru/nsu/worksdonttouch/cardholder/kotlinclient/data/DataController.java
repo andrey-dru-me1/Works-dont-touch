@@ -2,19 +2,26 @@ package ru.nsu.worksdonttouch.cardholder.kotlinclient.data;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.UserData;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card.CreateCard;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.card.EditCard;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.action.image.AddImage;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Card;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.CardList;
-import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.data.card.Cards;
+
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.image.GetImage;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.UserData;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.card.CreateCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.card.EditCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.action.image.AddImage;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.CardList;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.CardWithDistance;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.Event;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.ListenerEventRunner;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.LogOutEvent;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.LocalCard;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.SortedCard;
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.ApiWorker;
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.net.HttpCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,10 +111,33 @@ public class DataController {
     }
 
     public void deleteCard(Card card, DataCallBack<Card> callBack) {
+        if (isOffline || apiWorker == null) {
+            if (card instanceof LocalCard) {
+                try {
+                    dataFileContainer.deleteCard(card);
+                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    runEvent(new CardRemoveEvent(card));
+                } catch (Exception e) {
+                    runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                }
+            } else {
+                runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+            }
+        } else {
+            apiWorker.deleteCard(card, (result, data) -> {
+                if(result == HttpCallback.HttpResult.SUCCESSFUL) {
+                    runCallback(callBack, DataCallBack.DataStatus.OK, card);
+                    runEvent(new CardRemoveEvent(card));
+                } else {
+                    runCallback(callBack, DataCallBack.DataStatus.CANCELED, null);
+                }
+            });
+        }
     }
 
     public void getImage(Card card, long id, DataCallBack<File> callBack) {
-
+        GetImage getImage = new GetImage(this, callBack);
+        getImage.apply(card, id);
     }
 
     public void addImage(Card card, InputStream inputStream, DataCallBack<File> callBack) {
@@ -116,14 +146,126 @@ public class DataController {
     }
 
     public void getCards(DataCallBack<Cards> callBack) {
-
+        if (isOffline || apiWorker == null) {
+            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+        } else {
+            apiWorker.getCardList((result, cardList) -> {
+                switch (result) {
+                    case NO_CONNECTION:
+                    case FAIL:
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                    case SUCCESSFUL:
+                        pushUpdates();
+                        runCallback(callBack, DataCallBack.DataStatus.OK, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                    case AUTHORIZATION_ERROR:
+                        runCallback(callBack, DataCallBack.DataStatus.WRONG_USER, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        runEvent(new LogOutEvent(apiWorker.getUserData()));
+                        break;
+                    case NOT_FOUND:
+                        logger.log(Level.WARNING, "not found answer in get card list");
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                    case OTHER:
+                        logger.log(Level.WARNING, "unknown answer in get card list");
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                    case NO_PERMISSION:
+                        logger.log(Level.WARNING, "no permission in get card list");
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                    case WRONG_REQUEST:
+                        logger.log(Level.WARNING, "wrong request");
+                        runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                        break;
+                }
+            });
+        }
     }
 
     public void getCards(DataCallBack<Cards> callBack, double latitude, double longitude) {
+        if (isOffline || apiWorker == null) {
+            runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+        } else {
+            apiWorker.getCardList(latitude, longitude, (result, cardList) -> {
+                if (result == HttpCallback.HttpResult.SUCCESSFUL) {
+                    pushUpdates();
+                }
+                if (cardList != null) {
+                    runCallback(callBack, DataCallBack.DataStatus.OK, generateCards(cardList));
+                } else {
+                    runCallback(callBack, DataCallBack.DataStatus.NOT_SYNCHRONISED, new Cards(new ArrayList<>(), dataFileContainer.getCards()));
+                }
+            });
+        }
+    }
+
+    private Cards generateCards(@NotNull CardList list) {
+        Cards cards = new Cards(new ArrayList<>(), new ArrayList<>());
+        List<Card> localCards = dataFileContainer.getCards();
+        for (Card localCard : localCards) {
+            boolean isSorted = false;
+            if (localCard.getId() != null) {
+                for (CardWithDistance cardWithDistance : list.getNearest()) {
+                    if (cardWithDistance.getId().equals(localCard.getId())) {
+                        cards.getSortedCards().add(new SortedCard(localCard, cardWithDistance.getDistance()));
+                        isSorted = true;
+                        break;
+                    }
+                }
+            }
+            if (!isSorted) {
+                if (localCard.getId() != null && !list.getOther().contains(localCard.getId())) {
+                    try {
+                        dataFileContainer.deleteCard(localCard);
+                    } catch (Exception e) {
+                        logger.log(Level.INFO, "Card delete error", e);
+                    }
+                }
+                cards.getOther().add(localCard);
+            }
+        }
+        return cards;
     }
 
     public void pushUpdates() {
-        //TODO: реализовать
+        try {
+            for (Card card : dataFileContainer.getUpdateList()) {
+                if (card instanceof LocalCard) {
+                    apiWorker.addCard(new Card(card.getName(), card.getBarcode(), null, null), (result, data) -> {
+                        if (data != null) {
+                            try {
+                                dataFileContainer.save(data, true);
+                                apiWorker.editCard(card, (result1, data1) -> {
+                                    if (data1 != null) {
+                                        try {
+                                            dataFileContainer.save(data1, true);
+                                        } catch (Exception e) {
+                                            logger.log(Level.INFO, "card edit error", e);
+                                        }
+                                    }
+                                });
+                            } catch (Exception e) {
+                                logger.log(Level.INFO, "card edit error", e);
+                            }
+                        }
+                    });
+                } else {
+                    apiWorker.editCard(card, (result, data) -> {
+                        if (data != null) {
+                            try {
+                                dataFileContainer.save(data, true);
+                            } catch (Exception e) {
+                                logger.log(Level.INFO, "card edit error", e);
+                            }
+                        }
+                    });
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Update error", e);
+        }
     }
 
     public ApiWorker getApiWorker() {
@@ -148,11 +290,11 @@ public class DataController {
         }
     }
 
-//    public static void unregisterListener(@NotNull EventListener eventListener) {
-//        listenerMap.forEach((clazz, listener) -> {
-//            listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
-//        });
-//    }
+    public static void unregisterListener(@NotNull EventListener eventListener) {
+        listenerMap.forEach((clazz, listener) -> {
+            listener.removeIf(runner -> runner.getEventListener().equals(eventListener));
+        });
+    }
 
     public static void runEvent(@NotNull Event event) {
         for (ListenerEventRunner runner : listenerMap.get(event.getClass())) {
