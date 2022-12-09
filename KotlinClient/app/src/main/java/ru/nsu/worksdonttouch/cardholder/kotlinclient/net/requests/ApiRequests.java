@@ -28,11 +28,8 @@ public class ApiRequests extends ApiWorker {
     }
 
     public static String authorizationString(UserData data) {
-        if (true) {
-            return "Basic " + new String(Base64.getEncoder()
-                    .encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
-        }
-        return null;
+        return "Basic " + new String(Base64.getEncoder()
+                .encode((data.getLogin() + ":" + data.getPassword()).getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
