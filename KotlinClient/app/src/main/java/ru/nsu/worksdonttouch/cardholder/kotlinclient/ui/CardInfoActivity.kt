@@ -40,6 +40,9 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.oned.Code128Writer
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.R
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.DataController
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Coordinate
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.location.Location
@@ -49,7 +52,9 @@ import java.io.File
 import java.util.*
 
 
-class CardInfoActivity : ComponentActivity() {
+class CardInfoActivity : ComponentActivity(), EventListener {
+
+    private var currentCard: Card? by mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,9 +66,8 @@ class CardInfoActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
-                    val cardHelper: Card? = intent.getSerializableExtra("card") as Card?
-                    if(cardHelper == null) finish()
-                    val card: Card = cardHelper!!
+                    currentCard = intent.getSerializableExtra("card") as Card?
+                    val card = remember { currentCard }
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
                     var selectedLocation: Location? = null
@@ -71,8 +75,13 @@ class CardInfoActivity : ComponentActivity() {
                     Column {
 
                         //Main card image (face side)
+                        var cardPreview: File? = null
+                        if((card?.images?.size ?: 0) > 0) {
+                            DataController.getInstance()
+                                .getImage(card, card!!.images[0]) { _, file -> cardPreview = file }
+                        }
                         Image(
-                            painter = rememberAsyncImagePainter(model = if (card.images.size  > 0) card.images[0] else null),
+                            painter = rememberAsyncImagePainter(model = cardPreview),
                             contentDescription = "Card preview",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
@@ -80,9 +89,9 @@ class CardInfoActivity : ComponentActivity() {
                                 .clip(RoundedCornerShape(10.dp))
                         )
 
-                        Text(fontSize = 50.sp, text = card.name)
+                        Text(fontSize = 50.sp, text = card?.name ?: "")
 
-                        val barcodeString: String = card.barcode ?: ""
+                        val barcodeString: String = card?.barcode ?: ""
 
                         val writer = Code128Writer()
                         val matrix: BitMatrix =
@@ -105,7 +114,7 @@ class CardInfoActivity : ComponentActivity() {
 
                         //Other images of the card
                         Column {
-                            card.images.map {
+                            card?.images?.map {
                                 var image: File? = null
                                 DataController.getInstance()
                                     .getImage(card, it) { _, file -> image = file }
@@ -118,7 +127,7 @@ class CardInfoActivity : ComponentActivity() {
 
                         Text("Locations:")
                         Column {
-                            card.locations.map {
+                            card?.locations?.map {
                                 ClickableText(text = AnnotatedString(it.name),
                                     style = TextStyle(color = Color.Blue),
                                     onClick = { _ ->
@@ -155,6 +164,18 @@ class CardInfoActivity : ComponentActivity() {
                 }
             }
         }
+
+        DataController.registerListener(this)
+    }
+
+    override fun onDestroy() {
+        DataController.unregisterListener(this)
+        super.onDestroy()
+    }
+
+    @EventHandler
+    fun changeCardEvent(event: CardChangeEvent) {
+        currentCard = event.card
     }
 
 }

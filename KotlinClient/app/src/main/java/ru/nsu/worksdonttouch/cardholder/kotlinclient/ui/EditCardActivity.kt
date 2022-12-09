@@ -40,7 +40,7 @@ class EditCardActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
 
-                    val card: Card? = intent.getSerializableExtra("card", Card::class.java)
+                    val card: Card? = intent.getSerializableExtra("card") as Card?
 
                     //TODO: delete file
 

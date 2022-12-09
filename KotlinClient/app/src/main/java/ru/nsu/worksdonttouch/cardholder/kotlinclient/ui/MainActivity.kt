@@ -40,6 +40,8 @@ import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventHandler
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.ui.theme.KotlinClientTheme
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.EventListener
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardAddEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardChangeEvent
+import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.listener.event.CardRemoveEvent
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Card
 import ru.nsu.worksdonttouch.cardholder.kotlinclient.data.objects.card.Cards
 import java.io.File
@@ -55,13 +57,13 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
-        DataController.getInstance().getCards { _, data -> cards.value = data }
+        update()
         DataController.getInstance().startOffline()
 
         val requestPermissionLauncher =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()
-            ){}
+            ) {}
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -87,7 +89,17 @@ class MainActivity : ComponentActivity(), EventListener {
     }
 
     @EventHandler
-    fun addCardEvent(event : CardAddEvent) {
+    fun addCardEvent(event: CardAddEvent) {
+        update()
+    }
+
+    @EventHandler
+    fun changeCardEvent(event: CardChangeEvent) {
+        update()
+    }
+
+    @EventHandler
+    fun removeCardEvent(event: CardRemoveEvent) {
         update()
     }
 
@@ -115,14 +127,15 @@ class MainActivity : ComponentActivity(), EventListener {
         ) {
 
             //Grid of cards
-            LazyVerticalGrid (
+            LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(5.dp),
                 columns = GridCells.Fixed(2),
             ) {
-                cards.value?.sortedCards?.sortedBy {it.distance}?.map {  item { CardView(it.card) } }
-                cards.value?.other?.map {  item { CardView(it) } }
+                cards.value?.sortedCards?.sortedBy { it.distance }
+                    ?.map { item { CardView(it.card) } }
+                cards.value?.other?.map { item { CardView(it) } }
             }
 
             //Spinning round
@@ -168,13 +181,14 @@ class MainActivity : ComponentActivity(), EventListener {
         )
         {
             Box {
-                val image: MutableState<File?> = remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
-                if(card.images.size > 0) {
+                val image: MutableState<File?> =
+                    remember { mutableStateOf(null) }  //TODO: check if it possible to refuse remember statement
+                if (card.images.size > 0) {
                     DataController.getInstance()
                         .getImage(card, card.images[0]) { _, file -> image.value = file }
                 }
                 Image(
-                    painter = rememberAsyncImagePainter(model = image),
+                    painter = rememberAsyncImagePainter(model = image.value),
                     contentDescription = card.name,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
@@ -235,7 +249,8 @@ fun DefaultPreview() {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color.Gray) ) {
+                .background(Color.Gray)
+        ) {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
                 columns = GridCells.Fixed(2),
@@ -244,7 +259,8 @@ fun DefaultPreview() {
                     Box(
                         Modifier
                             .fillMaxSize()
-                            .background(color = Color.Blue))
+                            .background(color = Color.Blue)
+                    )
                 }
             }
         }
