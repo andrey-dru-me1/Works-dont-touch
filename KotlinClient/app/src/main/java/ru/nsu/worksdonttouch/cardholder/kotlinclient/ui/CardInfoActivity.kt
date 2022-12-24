@@ -54,14 +54,13 @@ import java.util.*
 
 class CardInfoActivity : ComponentActivity(), EventListener {
 
-    private var name: String by mutableStateOf("")
-    private var barcode: String by mutableStateOf("")
-    private var images: List<Long> by mutableStateOf(listOf())
-    private var locations: List<Location> by mutableStateOf(listOf())
+    private var card: Card? by mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        card = intent.getSerializableExtra("card")!! as Card
 
         setContent {
             KotlinClientTheme {
@@ -69,12 +68,8 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
                 ) {
-                    val card = intent.getSerializableExtra("card") as Card?
-                    name = card?.name ?: ""
-                    barcode = card?.barcode ?: ""
-                    images = card?.images ?: listOf()
-                    locations = card?.locations ?: listOf()
 
+                    val card: Card = this.card!!
 
                     val openDialog = rememberSaveable { mutableStateOf(false) }
                     var selectedLocation: Location? = null
@@ -83,9 +78,9 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
                         //Main card image (face side)
                         var cardPreview: File? = null
-                        if((images.size) > 0) {
+                        if((card.images.size) > 0) {
                             DataController.getInstance()
-                                .getImage(card, images[0]) { _, file -> cardPreview = file }
+                                .getImage(card, card.images[0]) { _, file -> cardPreview = file }
                         }
                         Image(
                             painter = rememberAsyncImagePainter(model = cardPreview),
@@ -96,9 +91,9 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                                 .clip(RoundedCornerShape(10.dp))
                         )
 
-                        Text(fontSize = 50.sp, text = name)
+                        Text(fontSize = 50.sp, text = card.name)
 
-                        val barcodeString: String = barcode
+                        val barcodeString: String? = card.barcode
 
                         val writer = Code128Writer()
                         val matrix: BitMatrix =
@@ -114,27 +109,27 @@ class CardInfoActivity : ComponentActivity(), EventListener {
                         )
 
                         Text(
-                            text = barcodeString,
+                            text = barcodeString ?: "",
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
 
                         //Other images of the card
                         Column {
-                            images.map {
+                            card.images.map {
                                 var image: File? = null
                                 DataController.getInstance()
                                     .getImage(card, it) { _, file -> image = file }
                                 Image(
                                     painter = rememberAsyncImagePainter(model = image),
-                                    contentDescription = name
+                                    contentDescription = card.name
                                 )
                             }
                         }
 
                         Text("Locations:")
                         Column {
-                            locations.map {
+                            card.locations.map {
                                 ClickableText(text = AnnotatedString(it.name),
                                     style = TextStyle(color = Color.Blue),
                                     onClick = { _ ->
@@ -182,10 +177,8 @@ class CardInfoActivity : ComponentActivity(), EventListener {
 
     @EventHandler
     fun changeCardEvent(event: CardChangeEvent) {
-        name = event.card.name
-        barcode = event.card.barcode ?: ""
-        images = event.card.images
-        locations = event.card.locations
+        this.card = null
+        this.card = event.card
     }
 
 }

@@ -59,12 +59,12 @@ class MainActivity : ComponentActivity(), EventListener {
 
         DataController.init(this.filesDir)
 
-        if(flag) {
-            val intent = Intent(this, AuthorisationActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            flag = false
-        }
+//        if(flag) {
+//            val intent = Intent(this, AuthorisationActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//            startActivity(intent)
+//            flag = false
+//        }
 
         update()
         DataController.getInstance().startOffline()
